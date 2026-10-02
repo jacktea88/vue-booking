@@ -1,0 +1,2434 @@
+BUILD A PRODUCTION-READY RIDE BOOKING & CARPOOLING WEB APP — ALGERIA
+
+0. ROLE
+
+You are a senior full-stack engineer, software architect, database engineer, Supabase/PostgreSQL/PostGIS expert, Vue 3 + TypeScript engineer, UX/UI engineer, and security engineer.
+
+Your task is to design and build a complete working MVP web application for an Algeria-focused ride booking / carpooling platform.
+
+Do not create a mockup, prototype-only UI, static demo, or pseudo-code.
+
+Build a real working application with:
+
+- Vue 3
+- TypeScript
+- Tailwind CSS
+- Supabase
+- PostgreSQL
+- PostGIS
+- Supabase Auth
+- Supabase Storage
+- Supabase Realtime where useful
+- PostgreSQL RPC/functions for transactional operations
+- Responsive mobile-first UI
+- Arabic / French / English i18n
+- RTL/LTR support
+- Map-provider abstraction
+
+The result must be runnable and deployable.
+
+---
+
+1. PRODUCT OBJECTIVE
+
+Build a platform connecting:
+
+- Clients/passengers
+- Drivers
+- Company administrators
+
+The core workflow is:
+
+Driver
+  ↓
+Creates Trip
+  ↓
+Defines ordered route/checkpoints
+  ↓
+System calculates distance / ETA / reference prices
+  ↓
+Trip published
+  ↓
+Client searches route
+  ↓
+Client selects pickup + destination
+  ↓
+Client selects seats
+  ↓
+Online payment
+  ↓
+Booking confirmed
+  ↓
+Trip execution
+  ↓
+Trip completed
+  ↓
+Mutual ratings
+
+The system must support:
+
+- Multi-checkpoint trips
+- Route-based matching
+- Segment pricing
+- Online-only payments
+- Driver approval mode
+- Automatic confirmation mode
+- Booking cancellation
+- 80% refund when cancellation is eligible
+- No refund for no-show
+- Seat resale
+- Booking transfer between compatible trips
+- Driver verification
+- Vehicle management
+- Notifications
+- Ratings
+- Admin management
+- Audit logs
+
+---
+
+2. IMPORTANT PRODUCT PRINCIPLES
+
+2.1 MVP FIRST
+
+Do NOT over-engineer the MVP.
+
+Do not build unnecessary:
+
+- microservices
+- event buses
+- complex workflow engines
+- CQRS
+- distributed systems
+- unnecessary abstractions
+- unnecessary tables
+- unnecessary APIs
+- unnecessary background services
+
+Keep the architecture simple and maintainable.
+
+Use:
+
+Vue 3
+    ↓
+Supabase
+    ↓
+PostgreSQL + PostGIS
+
+Use Edge Functions only when a server-side operation genuinely requires them.
+
+Use PostgreSQL RPC/functions for operations requiring:
+
+- transactions
+- row locking
+- atomic seat reservation
+- payment state transitions
+- resale seat reservation
+- transfer operations
+- other critical business operations
+
+---
+
+3. FUTURE AUTOMATED GRAPH EXECUTION
+
+Do NOT implement the future workflow/graph execution engine in the MVP.
+
+However, structure business operations so that they can later become graph nodes.
+
+Examples:
+
+create_booking
+pay_booking
+confirm_booking
+cancel_booking
+create_resale
+buy_resale
+request_transfer
+approve_transfer
+reject_transfer
+start_trip
+complete_trip
+
+Keep current business logic fact-oriented and modular.
+
+Do NOT create:
+
+workflow_nodes
+workflow_edges
+workflow_graphs
+
+in the MVP.
+
+The future system will be added later.
+
+---
+
+4. TECHNOLOGY STACK
+
+Frontend
+
+Vue 3
+TypeScript
+Vite
+Tailwind CSS
+Vue Router
+Pinia
+vue-i18n
+
+Use Composition API.
+
+Prefer strongly typed code.
+
+Avoid unnecessary dependencies.
+
+---
+
+Backend
+
+Use Supabase:
+
+Supabase Auth
+PostgreSQL
+PostGIS
+Storage
+Realtime
+RPC / PostgreSQL functions
+Edge Functions when necessary
+
+No traditional Node/Express backend is required for the MVP.
+
+---
+
+5. MAP ARCHITECTURE
+
+Do not hard-code the application to one map provider.
+
+Create a map abstraction.
+
+For example:
+
+interface MapProvider {
+  renderMap(): Promise<void>
+  searchPlaces(query: string): Promise<PlaceResult[]>
+  geocode(query: string): Promise<GeoPoint | null>
+  reverseGeocode(point: GeoPoint): Promise<PlaceResult | null>
+  getRoute(points: GeoPoint[]): Promise<RouteResult>
+  getDistance(from: GeoPoint, to: GeoPoint): Promise<number>
+}
+
+The UI must not directly depend on Google Maps or another provider.
+
+The provider must be replaceable later.
+
+Use PostGIS for geographic database operations.
+
+---
+
+6. LANGUAGES
+
+The application supports from the beginning:
+
+Arabic
+French
+English
+
+Arabic:
+
+RTL
+
+French / English:
+
+LTR
+
+Implement i18n from the beginning.
+
+Do not hard-code user-facing strings throughout components.
+
+Language selection must be persistent.
+
+---
+
+7. USER ROLES
+
+Exactly three roles:
+
+client
+driver
+admin
+
+A user has exactly one role.
+
+There is NO:
+
+client + driver
+
+dual role.
+
+There is no separate accountant role.
+
+Financial permissions may later be attached to administrators.
+
+---
+
+8. AUTHENTICATION
+
+Use Supabase Auth.
+
+Support:
+
+- email/password
+- authenticated sessions
+- logout
+- password reset
+- protected routes
+
+Every authenticated user must have a corresponding:
+
+profiles
+
+row.
+
+Role must NOT be freely editable by the user.
+
+Role changes must be controlled by trusted server-side logic/admin operations.
+
+---
+
+9. USER PROFILE
+
+Common profile fields:
+
+id
+role
+full_name
+phone
+photo_url
+identity_status
+created_at
+updated_at
+
+Identity status:
+
+pending
+verified
+rejected
+
+Identity card is required.
+
+Identity document is stored in a private Supabase Storage bucket.
+
+Users can:
+
+pending → logged in
+pending → use non-sensitive functionality
+
+But a driver who is not verified cannot create/publish trips.
+
+Rejected identity documents can be uploaded again:
+
+rejected
+   ↓
+new document
+   ↓
+pending
+
+---
+
+10. DRIVER VERIFICATION
+
+Drivers require additional verification.
+
+Required documents can include:
+
+identity_card
+driving_license
+vehicle_registration
+insurance
+
+Create:
+
+verification_documents
+
+with document status:
+
+pending
+verified
+rejected
+
+Admin can:
+
+- review
+- verify
+- reject
+- provide rejection reason
+
+A driver must have an overall verified state before creating a trip.
+
+---
+
+11. VEHICLE
+
+MVP rule:
+
+«One driver = one vehicle.»
+
+Vehicle fields:
+
+id
+driver_id
+brand
+model
+color
+plate_number
+capacity
+created_at
+updated_at
+
+Capacity is manually entered by the driver.
+
+Enforce:
+
+vehicles.driver_id UNIQUE
+
+Vehicle capacity is used as the maximum passenger capacity.
+
+---
+
+12. GEOGRAPHY MODEL
+
+The application is designed for Algeria.
+
+Places can represent:
+
+wilaya
+commune
+station
+place
+custom
+
+Create:
+
+places
+
+Fields:
+
+id
+name
+type
+wilaya
+commune
+location
+is_custom
+created_by
+created_at
+
+Use:
+
+GEOGRAPHY(POINT, 4326)
+
+for geographic coordinates.
+
+---
+
+13. CUSTOM MAP POINTS
+
+A user may select a point directly on the map.
+
+A checkpoint does not have to exist in the global places database.
+
+Therefore:
+
+trip_checkpoints.place_id
+
+is nullable.
+
+Every checkpoint must still have:
+
+name
+location
+sequence
+
+---
+
+14. TRIP MODEL
+
+A trip belongs to:
+
+driver
+vehicle
+
+Trip fields:
+
+id
+driver_id
+vehicle_id
+departure_at
+status
+booking_mode
+published_at
+started_at
+completed_at
+cancelled_at
+created_at
+updated_at
+
+Booking mode:
+
+auto_confirm
+driver_approval
+
+Trip lifecycle:
+
+draft
+published
+boarding
+in_progress
+completed
+cancelled
+
+Keep lifecycle implementation simple for MVP.
+
+Do not create an elaborate workflow state machine yet.
+
+---
+
+15. TRIP CHECKPOINTS
+
+A trip contains an ordered list of checkpoints.
+
+Example:
+
+Alger
+  ↓
+Blida
+  ↓
+Médéa
+  ↓
+Laghouat
+
+Create:
+
+trip_checkpoints
+
+Fields:
+
+id
+trip_id
+place_id
+name
+location
+sequence
+estimated_arrival
+created_at
+
+Constraint:
+
+UNIQUE(trip_id, sequence)
+
+A trip requires at least two checkpoints.
+
+The user must be able to:
+
+- add checkpoint
+- remove checkpoint
+- reorder checkpoint
+- select place
+- select custom map point
+
+---
+
+16. TRIP SEGMENTS
+
+Automatically derive adjacent route segments.
+
+Example:
+
+Alger → Blida
+Blida → Médéa
+Médéa → Laghouat
+
+Create:
+
+trip_segments
+
+Fields:
+
+id
+trip_id
+from_checkpoint_id
+to_checkpoint_id
+sequence
+distance_km
+estimated_minutes
+reference_price
+driver_price
+capacity
+reserved_seats
+created_at
+
+Do not require the driver to manually enter:
+
+distance
+ETA
+
+The system calculates them.
+
+---
+
+17. PRICING
+
+Use segment-level pricing.
+
+Each segment has:
+
+reference_price
+driver_price
+
+The system calculates a reference price.
+
+The driver may adjust the segment price before publishing.
+
+For a booking:
+
+pickup = checkpoint A
+dropoff = checkpoint D
+
+and route:
+
+A → B → C → D
+
+the booking price per seat is:
+
+A-B price
++
+B-C price
++
+C-D price
+
+At booking creation, snapshot the calculated price.
+
+After confirmation:
+
+«Changing trip segment prices must NOT change the existing booking price.»
+
+Use:
+
+price_per_seat
+total_amount
+
+in the booking.
+
+Currency:
+
+DZD
+
+No platform fee in MVP.
+
+---
+
+18. BOOKING
+
+Create:
+
+bookings
+
+Fields:
+
+id
+client_id
+trip_id
+pickup_checkpoint_id
+dropoff_checkpoint_id
+seats
+price_per_seat
+total_amount
+status
+source
+created_at
+updated_at
+
+Source:
+
+direct
+resale
+
+Transfer does NOT need to create a new booking.
+
+A transfer changes the existing booking's trip/checkpoint references while keeping the booking identity and financial snapshot.
+
+---
+
+19. BOOKING STATUS
+
+Keep status simple.
+
+Support the states necessary for:
+
+pending
+confirmed
+rejected
+cancelled
+completed
+no_show
+
+Do not create unnecessary states unless implementation requires them.
+
+---
+
+20. SEAT RESERVATION
+
+Seat availability must be transactionally safe.
+
+Never implement:
+
+SELECT available seats
+INSERT booking
+
+as separate unsafe operations.
+
+Use a PostgreSQL RPC/transaction.
+
+The reservation operation must:
+
+1. Lock the required segment rows.
+2. Verify capacity.
+3. Verify available seats on every covered segment.
+4. Reserve seats atomically.
+5. Create/update the booking.
+6. Return success/failure.
+
+For a booking:
+
+Alger → Laghouat
+
+reserve seats on:
+
+Alger → Blida
+Blida → Médéa
+Médéa → Laghouat
+
+This prevents overbooking.
+
+---
+
+21. ONLINE PAYMENT ONLY
+
+This is a critical business rule.
+
+The company NEVER handles cash.
+
+There is:
+
+NO cash payment
+NO cash booking
+NO cash QR
+NO cash debt
+
+All bookings are paid online.
+
+Payment provider must be abstracted.
+
+Create:
+
+booking_payments
+
+with:
+
+id
+booking_id
+amount
+currency
+status
+provider
+provider_reference
+paid_at
+refunded_amount
+created_at
+updated_at
+
+Payment status can include:
+
+requires_payment
+authorized
+paid
+failed
+expired
+refunded
+partially_refunded
+
+Support payment retries safely.
+
+Do not assume that a payment provider has been selected yet.
+
+Create an adapter/service interface such as:
+
+interface PaymentProvider {
+  createPayment(...)
+  authorizePayment(...)
+  capturePayment(...)
+  refundPayment(...)
+  getPaymentStatus(...)
+}
+
+---
+
+22. AUTO-CONFIRM BOOKING
+
+For:
+
+booking_mode = auto_confirm
+
+workflow:
+
+Client selects trip
+        ↓
+System checks seats
+        ↓
+System creates payment
+        ↓
+Payment succeeds
+        ↓
+Booking confirmed
+
+Seat reservation and booking creation must be atomic.
+
+---
+
+23. DRIVER APPROVAL BOOKING
+
+For:
+
+booking_mode = driver_approval
+
+workflow:
+
+Client requests booking
+        ↓
+Seat reservation
+        ↓
+Payment authorization / hold
+        ↓
+Booking pending
+        ↓
+Driver accepts or rejects
+
+Accept:
+
+authorize
+    ↓
+capture
+    ↓
+confirmed
+
+Reject/timeout:
+
+release payment authorization
+release seats
+booking rejected/expired
+
+Approval timeout must be configurable.
+
+Use a sensible MVP default such as:
+
+30 minutes
+
+but keep it configurable.
+
+---
+
+24. CANCELLATION
+
+Keep cancellation policy intentionally simple.
+
+Eligible client cancellation:
+
+more than 24 hours before trip
+AND
+more than 30 minutes after booking
+
+Refund:
+
+80%
+
+Otherwise normal cancellation is not eligible for refund.
+
+No-show:
+
+0% refund
+
+Do not build a complicated refund-policy engine.
+
+Use transactional refund logic.
+
+---
+
+25. DRIVER CANCELLATION
+
+Do not implement a complex policy engine.
+
+At MVP level:
+
+- protect confirmed bookings
+- prevent unsafe cancellation
+- automatically handle pending bookings appropriately
+- preserve an audit trail
+
+Detailed exceptional cases can be implemented later through the future graph execution system.
+
+---
+
+26. RESALE
+
+Clients can resell part of an existing booking.
+
+Example:
+
+Original booking:
+3 seats
+
+Seller lists:
+2 seats
+
+Buyer purchases:
+1 seat
+
+Remaining resale quantity:
+1 seat
+
+Create:
+
+resale_listings
+
+Fields:
+
+id
+booking_id
+seller_id
+seats_for_sale
+seats_sold
+price_per_seat
+status
+created_at
+closed_at
+
+Rules:
+
+- Seller specifies seats for sale.
+- Buyer may purchase fewer than available.
+- Seller cannot sell more than the remaining seats.
+- Once all offered seats are sold, listing closes automatically.
+- Seller price cannot exceed the original booking's seat price.
+- Resale is online-only.
+- Buyer receives a normal booking.
+- Buyer can later cancel according to normal cancellation rules.
+- Buyer can later transfer according to normal transfer rules.
+
+Resale must use atomic seat locking.
+
+---
+
+27. RESALE FINANCIAL MODEL
+
+Example:
+
+Original booking:
+
+3 × 1000 DZD
+
+Seller resells one seat for:
+
+700 DZD
+
+The driver remains entitled to the original trip fare.
+
+The company already holds the original payment.
+
+The resale transaction creates the buyer's new payment and records the resale price.
+
+Do not build a complex accounting engine in the MVP.
+
+Preserve enough data to support later ledger/settlement implementation.
+
+---
+
+28. TRANSFER
+
+Transfer is booking-level.
+
+The whole booking is transferred.
+
+No partial transfer.
+
+Driver initiates transfer.
+
+Workflow:
+
+Driver A
+   ↓
+requests transfer
+   ↓
+system finds compatible trips
+   ↓
+Driver selects target trip
+   ↓
+Client receives notification
+   ↓
+Client approves/rejects
+
+Create:
+
+transfer_requests
+
+Fields:
+
+id
+booking_id
+from_trip_id
+to_trip_id
+requested_by
+status
+created_at
+responded_at
+
+Status:
+
+pending
+approved
+rejected
+cancelled
+
+During transfer:
+
+seat reservation is protected
+
+If approved:
+
+booking.trip_id
+
+moves to the target trip.
+
+The booking price does NOT change.
+
+Update:
+
+pickup_checkpoint_id
+dropoff_checkpoint_id
+
+to compatible checkpoints on the target trip.
+
+Preserve transfer history in:
+
+transfer_requests
+audit_logs
+
+Do not create a new booking for a transfer.
+
+---
+
+29. TRANSFER + RESALE RULE
+
+Resale and transfer must not be active simultaneously on the same booking.
+
+Rules:
+
+active transfer
+    → cannot create resale
+
+If transfer is cancelled/rejected:
+
+normal resale functionality returns
+
+If a transfer is pending and the client cancels the booking:
+
+transfer request is cancelled
+
+Keep these rules simple.
+
+---
+
+30. SEARCH / ROUTE MATCHING
+
+Client searches:
+
+From
+To
+Date
+Number of seats
+
+A trip matches when:
+
+pickup exists before destination
+
+on the driver's ordered route.
+
+Example trip:
+
+Alger
+Blida
+Médéa
+Laghouat
+
+must match:
+
+Alger → Laghouat
+Alger → Médéa
+Blida → Laghouat
+Blida → Médéa
+
+but not:
+
+Laghouat → Alger
+Médéa → Blida
+
+unless another trip direction exists.
+
+Support geographic tolerance around checkpoints using PostGIS.
+
+The search layer should be database-driven and efficient.
+
+Use PostGIS indexes.
+
+---
+
+31. GPS
+
+GPS is only used for:
+
+current location
+
+at this stage.
+
+Do NOT implement continuous user tracking.
+
+A client may use current location when selecting:
+
+From
+
+but can also manually select a place or map point.
+
+---
+
+32. NOTIFICATIONS
+
+Support:
+
+in-app
+push
+
+Create:
+
+notifications
+
+Fields:
+
+id
+user_id
+type
+title
+body
+data
+read_at
+created_at
+
+Notifications should be generated for important events:
+
+booking request
+booking accepted
+booking rejected
+payment success
+payment failure
+refund
+trip approaching
+trip started
+trip completed
+transfer request
+transfer accepted/rejected
+resale created
+resale purchased
+identity verification
+document rejection
+trip cancellation
+
+Do not implement chat/messaging in MVP.
+
+---
+
+33. RATINGS
+
+After completed bookings:
+
+Client can rate Driver:
+
+1–5
+
+Driver can rate Client:
+
+1–5
+
+Optional comment.
+
+Create:
+
+ratings
+
+Fields:
+
+id
+booking_id
+from_user_id
+to_user_id
+rating
+comment
+created_at
+
+Constraints:
+
+rating BETWEEN 1 AND 5
+UNIQUE(booking_id, from_user_id)
+
+Only participants of the booking can rate each other.
+
+---
+
+34. ADMIN DASHBOARD
+
+Build one unified admin dashboard.
+
+Sections:
+
+Dashboard
+Users
+Driver Verification
+Vehicles
+Trips
+Bookings
+Payments
+Resales
+Transfers
+Ratings
+Settings
+Audit Logs
+
+Admin can:
+
+- inspect users
+- verify/reject documents
+- inspect trips
+- inspect bookings
+- inspect payments
+- inspect refunds
+- inspect resale
+- inspect transfers
+- manage system settings
+- inspect audit logs
+
+Sensitive administrative actions must be audited.
+
+---
+
+35. SETTINGS
+
+Create:
+
+settings
+
+with:
+
+key
+value JSONB
+updated_by
+updated_at
+
+Use settings for configurable values such as:
+
+booking approval timeout
+payment timeout
+resale payment timeout
+cancellation window
+refund percentage
+reference pricing parameters
+
+Do not hard-code business configuration unnecessarily.
+
+---
+
+36. AUDIT LOG
+
+Create:
+
+audit_logs
+
+Fields:
+
+id
+actor_id
+action
+entity_type
+entity_id
+metadata
+created_at
+
+Audit at least:
+
+identity verification
+document rejection
+admin overrides
+trip cancellation
+booking cancellation
+refund
+transfer
+resale
+payment state changes
+
+---
+
+37. DATABASE RELATIONSHIPS
+
+Implement the following core relationships:
+
+auth.users
+    │
+    └── profiles
+          │
+          ├── driver_profiles
+          │
+          ├── verification_documents
+          │
+          ├── vehicles
+          │
+          ├── trips
+          │     │
+          │     ├── trip_checkpoints
+          │     │       │
+          │     │       └── trip_segments
+          │     │
+          │     └── bookings
+          │
+          ├── notifications
+          ├── ratings
+          └── audit_logs
+
+Additional:
+
+bookings
+   ├── booking_payments
+   ├── resale_listings
+   └── transfer_requests
+
+---
+
+38. DATABASE TABLES
+
+Implement these core tables:
+
+profiles
+driver_profiles
+vehicles
+verification_documents
+places
+trips
+trip_checkpoints
+trip_segments
+bookings
+booking_payments
+resale_listings
+transfer_requests
+notifications
+ratings
+settings
+audit_logs
+
+Do not add unnecessary tables unless technically required.
+
+For seat inventory, prefer:
+
+trip_segments.capacity
+trip_segments.reserved_seats
+
+instead of introducing another inventory table.
+
+---
+
+39. POSTGRES / POSTGIS
+
+Enable:
+
+CREATE EXTENSION IF NOT EXISTS postgis;
+
+Use:
+
+GEOGRAPHY(POINT, 4326)
+
+for locations.
+
+Add appropriate indexes:
+
+GIST(location)
+
+and indexes for:
+
+trip status
+departure_at
+driver_id
+client_id
+booking status
+segment trip_id
+checkpoint trip_id
+notifications user_id
+payments booking_id
+
+Use composite indexes where query patterns justify them.
+
+---
+
+40. CONSTRAINTS
+
+Implement database constraints for critical invariants.
+
+Examples:
+
+vehicle capacity > 0
+seats > 0
+price >= 0
+rating BETWEEN 1 AND 5
+sequence >= 0
+reserved_seats >= 0
+reserved_seats <= capacity
+
+Use foreign keys.
+
+Use unique constraints where logically required.
+
+Use check constraints for business invariants that belong in the database.
+
+---
+
+41. ROW LEVEL SECURITY
+
+Enable RLS on all user-facing tables.
+
+Principle:
+
+«Users must only access data they are authorized to access.»
+
+Examples:
+
+profiles
+
+User:
+
+read own profile
+update own profile
+
+Admin:
+
+read/update all
+
+Role must not be self-modifiable.
+
+verification_documents
+
+Owner:
+
+read own documents
+upload own documents
+
+Admin:
+
+read/review all
+
+trips
+
+Authenticated users:
+
+read published trips
+
+Driver:
+
+manage own trips
+
+but only if verified where required.
+
+bookings
+
+Client:
+
+read own bookings
+
+Driver:
+
+read bookings belonging to own trips
+
+Admin:
+
+full access
+
+payments
+
+Client:
+
+read own payment records
+
+Admin:
+
+full access
+
+Driver should not receive unnecessary sensitive payment-provider information.
+
+notifications
+
+Only owner can read/update their notifications.
+
+audit_logs
+
+Admin only.
+
+Never rely solely on frontend authorization.
+
+---
+
+42. STORAGE
+
+Create at minimum:
+
+avatars
+verification-documents
+
+Recommended:
+
+avatars
+    → public or controlled public access
+
+verification-documents
+    → private
+
+Identity documents must never be publicly accessible.
+
+Use signed URLs where appropriate.
+
+---
+
+43. RPC / TRANSACTIONAL OPERATIONS
+
+Create secure PostgreSQL functions/RPCs for operations that must be atomic.
+
+At minimum:
+
+create_trip
+publish_trip
+search_trips
+create_booking
+confirm_booking
+reject_booking
+cancel_booking
+create_resale
+buy_resale
+request_transfer
+approve_transfer
+reject_transfer
+
+The exact RPC names can be improved if necessary, but preserve a clean domain-oriented API.
+
+Critical RPCs must use transactions and row locking.
+
+---
+
+44. SECURITY MODEL
+
+Never trust:
+
+frontend role
+frontend price
+frontend seat availability
+frontend payment status
+frontend user ID
+
+Validate everything server-side.
+
+The client must never be able to:
+
+change its role
+mark a payment as paid
+increase vehicle capacity arbitrarily after bookings
+bypass seat availability
+change another user's booking
+approve its own verification
+modify audit logs
+
+---
+
+45. FRONTEND ARCHITECTURE
+
+Organize the Vue application cleanly.
+
+Suggested structure:
+
+src/
+├── app/
+├── router/
+├── stores/
+├── composables/
+├── components/
+├── layouts/
+├── pages/
+├── features/
+│   ├── auth/
+│   ├── profile/
+│   ├── trips/
+│   ├── bookings/
+│   ├── payments/
+│   ├── resale/
+│   ├── transfers/
+│   ├── notifications/
+│   ├── ratings/
+│   └── admin/
+├── services/
+│   ├── supabase/
+│   ├── maps/
+│   └── payments/
+├── i18n/
+├── types/
+└── utils/
+
+Use feature-based organization where appropriate.
+
+---
+
+46. CLIENT UX
+
+Main navigation:
+
+Home
+Search
+Bookings
+Profile
+
+Home:
+
+Search Trip
+Upcoming Booking
+Quick Actions
+
+Search:
+
+From
+To
+Date
+Seats
+
+Results show:
+
+Driver
+vehicle
+departure
+arrival estimate
+route
+available seats
+price
+booking mode
+
+Client can open trip details.
+
+---
+
+47. DRIVER UX
+
+Main navigation:
+
+Home
+Trips
+Create
+Profile
+
+Driver dashboard:
+
+Current Trip
+Today's Trips
+Upcoming Trips
+Booking Requests
+
+Create Trip:
+
+departure
+route/checkpoints
+date/time
+booking mode
+
+System then calculates:
+
+distance
+ETA
+reference prices
+segments
+
+Driver may adjust segment prices.
+
+Then:
+
+Preview
+Publish
+
+---
+
+48. ADMIN UX
+
+Admin dashboard should prioritize operational visibility.
+
+Show:
+
+pending driver verifications
+active trips
+upcoming trips
+booking activity
+payment activity
+pending transfer requests
+active resale listings
+recent audit events
+
+Use tables with:
+
+search
+filter
+sort
+pagination
+details
+
+---
+
+49. RESPONSIVE DESIGN
+
+The same application must work well on:
+
+mobile
+tablet
+desktop
+
+Mobile-first.
+
+Use:
+
+bottom navigation / compact navigation
+cards
+sheets/dialogs
+responsive tables
+
+Desktop should take advantage of larger screens.
+
+Do not create separate mobile and desktop applications.
+
+---
+
+50. DESIGN SYSTEM
+
+Visual style:
+
+Modern
+Clean
+Minimal
+Professional
+
+Avoid:
+
+- excessive gradients
+- excessive animations
+- visual clutter
+- giant decorative components
+
+Focus on:
+
+clear hierarchy
+fast interaction
+readability
+map usability
+booking conversion
+
+---
+
+51. ACCESSIBILITY
+
+Implement reasonable accessibility:
+
+semantic HTML
+keyboard navigation
+visible focus states
+proper labels
+accessible dialogs
+sufficient contrast
+
+---
+
+52. ERROR HANDLING
+
+All important operations need clear errors.
+
+Examples:
+
+No seats available
+Payment failed
+Trip no longer available
+Driver not verified
+Booking expired
+Transfer unavailable
+Resale unavailable
+Invalid route
+Invalid checkpoint order
+
+Do not expose raw database errors to end users.
+
+Create typed application errors.
+
+---
+
+53. LOADING / EMPTY STATES
+
+Every major data view must support:
+
+loading
+success
+empty
+error
+
+Examples:
+
+No trips found
+No upcoming bookings
+No notifications
+No pending verification documents
+No transfer requests
+
+---
+
+54. REALTIME
+
+Use Supabase Realtime only where it provides real value.
+
+Good candidates:
+
+booking request status
+notifications
+driver approval
+transfer status
+payment state where safe
+trip operational status
+
+Do not make every database table realtime.
+
+---
+
+55. PERFORMANCE
+
+Optimize for mobile networks.
+
+Requirements:
+
+- lazy-load routes/pages
+- paginate large lists
+- avoid unnecessary realtime subscriptions
+- debounce search
+- use database-side filtering
+- use indexed queries
+- use PostGIS indexes
+- avoid loading all trips into the browser
+- avoid loading all places unnecessarily
+
+Search must happen server-side.
+
+---
+
+56. DATABASE QUERY PRINCIPLES
+
+Never retrieve the whole dataset and filter in JavaScript.
+
+Bad:
+
+SELECT all trips
+↓
+filter in browser
+
+Good:
+
+PostgreSQL/PostGIS query
+↓
+only return matching trips
+
+Use RPC for complex route matching.
+
+---
+
+57. API / SERVICE LAYER
+
+The frontend should not scatter raw Supabase queries everywhere.
+
+Create typed service modules such as:
+
+tripService
+bookingService
+paymentService
+resaleService
+transferService
+notificationService
+profileService
+adminService
+
+Each service should expose clear domain operations.
+
+Example:
+
+bookingService.createBooking(...)
+bookingService.cancelBooking(...)
+transferService.requestTransfer(...)
+resaleService.createListing(...)
+
+---
+
+58. TYPES
+
+Generate or maintain strong TypeScript types corresponding to:
+
+database entities
+enums
+RPC inputs
+RPC outputs
+API results
+
+Avoid:
+
+any
+
+unless technically unavoidable.
+
+---
+
+59. STATE MANAGEMENT
+
+Use Pinia only for genuinely shared state.
+
+Examples:
+
+auth
+current user
+language
+notifications
+
+Do not put every server query into global state.
+
+Prefer composables and server-side data fetching.
+
+---
+
+60. SEED DATA
+
+Provide development seed data for:
+
+Algeria locations
+sample users
+sample verified driver
+sample vehicle
+sample trips
+sample bookings
+
+Do not use real personal information.
+
+---
+
+61. TESTING
+
+Implement tests for critical business rules.
+
+At minimum test:
+
+Authentication
+
+role isolation
+
+Driver verification
+
+unverified driver cannot publish trip
+
+Trip
+
+checkpoint ordering
+segment generation
+
+Booking
+
+seat availability
+multi-segment reservation
+overbooking prevention
+
+Payment
+
+payment success
+payment failure
+payment timeout
+refund
+
+Resale
+
+partial resale
+seat locking
+listing closure
+
+Transfer
+
+compatible trip
+approval
+rejection
+price preservation
+
+Cancellation
+
+80% eligible refund
+no-show = 0 refund
+
+---
+
+62. IMPORTANT DATABASE INVARIANTS
+
+The following must be enforced server-side:
+
+one role per user
+
+one vehicle per driver
+
+unverified driver cannot create/publish trip
+
+trip requires at least two checkpoints
+
+checkpoint sequence must be valid
+
+segment capacity cannot exceed vehicle capacity
+
+reserved seats cannot exceed capacity
+
+booking seats cannot exceed available seats
+
+booking pickup must precede dropoff
+
+booking price is immutable after confirmation
+
+resale price cannot exceed original seat price
+
+resale cannot sell more seats than available
+
+transfer cannot create duplicate seats
+
+payment state cannot be forged by client
+
+refund cannot exceed paid amount
+
+rating must be 1–5
+
+user cannot rate unrelated booking
+
+role cannot be self-modified
+
+---
+
+63. DOMAIN MODEL
+
+Think in terms of these bounded domains:
+
+Identity
+Verification
+Vehicles
+Places
+Trips
+Routing
+Bookings
+Payments
+Resale
+Transfers
+Notifications
+Ratings
+Administration
+Audit
+
+Keep modules separated even though they share the same Supabase database.
+
+---
+
+64. IMPLEMENTATION ORDER
+
+Build in this order:
+
+Phase 1 — Foundation
+
+project setup
+Vue
+TypeScript
+Tailwind
+routing
+i18n
+Supabase
+environment configuration
+
+Phase 2 — Database
+
+extensions
+enums
+tables
+relationships
+constraints
+indexes
+RLS
+storage
+
+Phase 3 — Authentication
+
+signup
+login
+logout
+profile
+roles
+protected routes
+
+Phase 4 — Verification
+
+documents
+upload
+admin verification
+driver status
+
+Phase 5 — Vehicles
+
+vehicle CRUD
+capacity
+driver ownership
+
+Phase 6 — Places / Maps
+
+map abstraction
+place search
+geocoding
+custom points
+PostGIS
+
+Phase 7 — Trips
+
+create trip
+checkpoints
+route
+segments
+distance
+ETA
+reference pricing
+driver pricing
+publish
+
+Phase 8 — Search
+
+From
+To
+date
+seats
+route matching
+geographic tolerance
+
+Phase 9 — Booking
+
+seat reservation
+booking
+pricing snapshot
+auto-confirm
+driver approval
+
+Phase 10 — Payments
+
+provider abstraction
+payment flow
+authorization
+capture
+refund
+
+Phase 11 — Cancellation
+
+eligibility
+80% refund
+no-show
+
+Phase 12 — Resale
+
+listing
+partial seat sale
+buyer booking
+atomic locking
+
+Phase 13 — Transfer
+
+request
+compatible trips
+approval
+trip change
+
+Phase 14 — Notifications
+
+in-app
+push abstraction
+
+Phase 15 — Ratings
+
+client → driver
+driver → client
+
+Phase 16 — Admin
+
+dashboard
+verification
+operations
+payments
+audit
+settings
+
+Phase 17 — Testing / Hardening
+
+RLS tests
+RPC tests
+business logic tests
+UI tests
+responsive testing
+error handling
+performance
+security review
+
+---
+
+65. DELIVERABLES
+
+The agent must produce a complete working project.
+
+Required:
+
+complete source code
+database migrations
+Supabase SQL
+RPC/functions
+RLS policies
+Storage policies
+TypeScript types
+Vue components
+pages
+layouts
+stores
+services
+composables
+i18n
+seed data
+tests
+README
+environment example
+
+Do not return only architecture documentation.
+
+Build the actual application.
+
+---
+
+66. ENVIRONMENT
+
+Provide:
+
+.env.example
+
+with required variables.
+
+Never commit secrets.
+
+Never place private Supabase service-role keys in frontend code.
+
+Frontend may use only the public Supabase key intended for browser use.
+
+---
+
+67. SUPABASE SECURITY
+
+Never expose:
+
+service_role
+private API keys
+payment provider secrets
+admin credentials
+
+in the frontend.
+
+Server-side secrets must remain in:
+
+Supabase Edge Functions secrets
+
+or equivalent secure environment configuration.
+
+---
+
+68. ADMIN BOOTSTRAPPING
+
+The system must support creation of the initial admin through a secure server-side/bootstrap process.
+
+Do not allow public signup to select:
+
+admin
+
+as a freely assignable role.
+
+---
+
+69. DATABASE MIGRATIONS
+
+Use ordered migrations.
+
+Example:
+
+0001_extensions.sql
+0002_enums.sql
+0003_profiles.sql
+0004_verification.sql
+0005_places.sql
+0006_trips.sql
+0007_bookings.sql
+0008_payments.sql
+0009_resale.sql
+0010_transfer.sql
+0011_notifications.sql
+0012_ratings.sql
+0013_settings.sql
+0014_audit.sql
+0015_rls.sql
+0016_functions.sql
+0017_seed.sql
+
+The exact migration split may be adjusted, but migrations must be deterministic and repeatable.
+
+---
+
+70. CODE QUALITY
+
+Code must be:
+
+typed
+modular
+readable
+maintainable
+consistent
+production-oriented
+
+Avoid:
+
+dead code
+duplicated logic
+giant components
+magic numbers
+hard-coded business rules
+unsafe SQL
+client-side authorization
+
+Use constants/configuration for business parameters.
+
+---
+
+71. DO NOT OVERENGINEER
+
+Do NOT implement now:
+
+microservices
+complex accounting
+driver payroll engine
+complex loyalty system
+chat
+subscriptions
+corporate accounts
+recurring trips
+multi-vehicle drivers
+multi-role users
+continuous GPS tracking
+workflow graph engine
+AI recommendation engine
+advanced fraud detection
+
+These are future features.
+
+---
+
+72. FINAL ACCEPTANCE CRITERIA
+
+The application is considered complete only when this end-to-end scenario works:
+
+1. Client registers
+2. Client uploads identity document
+3. Driver registers
+4. Driver uploads required documents
+5. Admin verifies driver
+6. Driver adds vehicle
+7. Driver creates trip
+8. Driver adds ordered checkpoints
+9. System calculates route distance and ETA
+10. System generates segments
+11. System calculates reference prices
+12. Driver adjusts segment prices
+13. Driver publishes trip
+14. Client searches From/To/date/seats
+15. System finds compatible route
+16. Client selects trip
+17. Client pays online
+18. Seats are atomically reserved
+19. Booking becomes confirmed
+20. Driver sees booking
+21. Client sees booking
+22. Notifications are generated
+23. Client can cancel when eligible
+24. Refund is calculated at 80%
+25. Client can create resale listing
+26. Another client can purchase resale seats
+27. Resale listing closes when sold quantity is reached
+28. Driver can request booking transfer
+29. Client approves transfer
+30. Booking moves to compatible trip
+31. Booking price remains unchanged
+32. Trip completes
+33. Client rates driver
+34. Driver rates client
+35. Admin can inspect the entire lifecycle
+36. Audit log records sensitive actions
+
+---
+
+73. AGENT EXECUTION RULES
+
+Work directly on the project.
+
+Do not stop after generating a plan.
+
+Do not provide pseudo-code where real implementation is possible.
+
+When something is technically ambiguous, choose the simplest architecture consistent with the requirements.
+
+Do not invent new business requirements.
+
+Do not silently change existing business rules.
+
+If a technical decision is required, prefer:
+
+simple
+transaction-safe
+Supabase-native
+PostgreSQL-first
+mobile-friendly
+maintainable
+
+over unnecessary complexity.
+
+Before finishing:
+
+1. Run/build the application.
+2. Run database migrations.
+3. Validate TypeScript.
+4. Validate RLS.
+5. Test critical RPCs.
+6. Test the booking flow.
+7. Test payment-state handling.
+8. Test resale.
+9. Test transfer.
+10. Test responsive UI.
+11. Fix discovered errors.
+12. Provide a concise implementation summary.
+13. Provide exact setup/run/deploy instructions.
+
+The final result must be a real functional MVP, not a conceptual implementation.
