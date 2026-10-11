@@ -5,8 +5,8 @@ import type { BookingMode, GeoPoint, SearchTripRow, Trip, TripDetails } from '@/
 export interface CheckpointInput { name: string; lat: number; lng: number; place_id?: string | null }
 
 export interface SearchParams {
-  from: GeoPoint
-  to: GeoPoint
+  from?: GeoPoint | null
+  to?: GeoPoint | null
   date: string
   seats: number
   limit?: number
@@ -36,12 +36,13 @@ export const tripService = {
 
   getDetails(tripId: string): Promise<TripDetails> { return rpc<TripDetails>('get_trip_details', { p_trip: tripId }) },
 
-  /** Server-side route matching (PostGIS). Never filter trips in the browser. */
+  /** Server-side route matching (PostGIS). Never filter trips in the browser. Location is optional. */
   search(p: SearchParams): Promise<SearchTripRow[]> {
     return rpc<SearchTripRow[]>('search_trips', {
-      p_from_lat: p.from.lat, p_from_lng: p.from.lng,
-      p_to_lat: p.to.lat, p_to_lng: p.to.lng,
-      p_date: p.date, p_seats: p.seats,
+      p_date: p.date,
+      p_from_lat: p.from?.lat ?? null, p_from_lng: p.from?.lng ?? null,
+      p_to_lat: p.to?.lat ?? null, p_to_lng: p.to?.lng ?? null,
+      p_seats: p.seats,
       p_limit: p.limit ?? 20, p_offset: p.offset ?? 0,
     })
   },

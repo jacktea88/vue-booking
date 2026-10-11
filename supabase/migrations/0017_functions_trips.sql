@@ -222,9 +222,10 @@ end; $$;
 -- Search (database-driven, PostGIS, direction-aware)
 ----------------------------------------------------------------------
 create or replace function public.search_trips(
-  p_from_lat float8, p_from_lng float8,
-  p_to_lat float8, p_to_lng float8,
-  p_date date, p_seats int default 1,
+  p_date date,
+  p_from_lat float8 default null, p_from_lng float8 default null,
+  p_to_lat float8 default null, p_to_lng float8 default null,
+  p_seats int default 1,
   p_tolerance_m int default null,
   p_limit int default 20, p_offset int default 0
 ) returns table (
@@ -236,13 +237,19 @@ create or replace function public.search_trips(
   price_per_seat numeric, available_seats int, total_distance_km numeric
 ) language sql stable security definer set search_path = public, app as $$
   with tol as (select coalesce(p_tolerance_m, app.setting_int('search_tolerance_meters',15000))::float8 m),
-  src as (select st_setsrid(st_makepoint(p_from_lng,p_from_lat),4326)::geography g),
-  dst as (select st_setsrid(st_makepoint(p_to_lng,p_to_lat),4326)::geography g),
+  src as (select case when p_from_lat is not null and p_from_lng is not null 
+                  then st_setsrid(st_makepoint(p_from_lng,p_from_lat),4326)::geography 
+                  else null end g),
+  dst as (select case when p_to_lat is not null and p_to_lng is not null 
+                  then st_setsrid(st_makepoint(p_to_lng,p_to_lat),4326)::geography 
+                  else null end g),
   cand as (
     select t.id as trip_id, t.driver_id, t.departure_at, t.booking_mode, t.vehicle_id,
            a.id a_id, a.name a_name, a.sequence a_seq, a.estimated_arrival a_eta,
            b.id b_id, b.name b_name, b.sequence b_seq, b.estimated_arrival b_eta,
-           st_distance(a.location,(select g from src)) + st_distance(b.location,(select g from dst)) as detour
+           case when (select g from src) is not null and (select g from dst) is not null
+             then st_distance(a.location,(select g from src)) + st_distance(b.location,(select g from dst))
+             else 0 end as detour
     from public.trips t
     join public.trip_checkpoints a on a.trip_id = t.id
     join public.trip_checkpoints b on b.trip_id = t.id
@@ -251,8 +258,12 @@ create or replace function public.search_trips(
       and t.departure_at >= greatest(now(), p_date::timestamptz)
       and t.departure_at < (p_date + 1)::timestamptz
       and a.sequence < b.sequence
-      and st_dwithin(a.location, (select g from src), tol.m)
-      and st_dwithin(b.location, (select g from dst), tol.m)
+      and (case when (select g from src) is not null 
+             then st_dwithin(a.location, (select g from src), tol.m) 
+             else true end)
+      and (case when (select g from dst) is not null 
+             then st_dwithin(b.location, (select g from dst), tol.m) 
+             else true end)
   ),
   best as (
     select distinct on (trip_id) * from cand order by trip_id, detour asc

@@ -18,10 +18,14 @@ const date = ref(todayIso())
 const seats = ref(1)
 const submitted = ref(false)
 
-/** Matching happens entirely in PostgreSQL/PostGIS. */
+/** Matching happens entirely in PostgreSQL/PostGIS. Location is optional. */
 const results = useAsync<SearchTripRow[]>(async () => {
-  if (!from.value || !to.value) return []
-  return tripService.search({ from: from.value.point, to: to.value.point, date: date.value, seats: seats.value })
+  return tripService.search({ 
+    from: from.value?.point ?? null, 
+    to: to.value?.point ?? null, 
+    date: date.value, 
+    seats: seats.value 
+  })
 })
 
 async function submit() { submitted.value = true; await results.run() }
@@ -41,7 +45,7 @@ async function submit() { submitted.value = true; await results.run() }
         </div>
         <SeatStepper v-model="seats" :max="MAX_SEATS_PER_BOOKING" :label="t('common.seats')" />
       </div>
-      <button class="btn-primary w-full" type="submit" :disabled="!from || !to">{{ t('common.search') }}</button>
+      <button class="btn-primary w-full" type="submit">{{ t('common.search') }}</button>
     </form>
 
     <AsyncSection v-if="submitted" :state="results.state.value" :error="results.error.value"
