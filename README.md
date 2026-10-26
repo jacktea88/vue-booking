@@ -57,6 +57,12 @@ supabase/
 tests/                      Vitest unit tests + SQL integration tests
 ```
 
+## Documentation
+
+- [LINE Mini App MVP Plan](LINE_MINI_APP_MVP_PLAN.md)
+- [Deployment Guide](DEPLOYMENT_GUIDE.md)
+- [Local Setup Guide](LOCAL_SETUP_GUIDE.md)
+
 ## Setup
 
 ```bash
