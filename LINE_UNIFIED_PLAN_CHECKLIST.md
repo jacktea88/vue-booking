@@ -44,8 +44,9 @@
 
 - [ ] 已有 LINE Login Channel，且可設定 Callback URL。
 - [ ] 已建立 LIFF App 並取得 LIFF ID。
-- [ ] Supabase 啟用 LINE Provider（Channel ID/Secret 已配置）。
-- [ ] Supabase Redirect URL 已包含正式站網址。
+- [ ] Edge Function secrets 已設定：`supabase secrets set LINE_CHANNEL_ID=... LINE_CHANNEL_SECRET=...`（方案 B；Supabase 內建 SDK 不支援 LINE provider，已不適用「啟用 LINE Provider」）。
+- [ ] 已執行 migration 0021_line_auth.sql，並部署 `supabase functions deploy line-auth`。
+- [ ] LINE Login Channel 的 Callback URL 已包含 `<站點>/auth/line-callback`（含 localhost:5173）。
 - [ ] 決策確認：LINE 登入預設角色為 client。
 
 ---

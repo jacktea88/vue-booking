@@ -7,6 +7,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/register', name: 'register', component: () => import('@/features/auth/RegisterPage.vue'), meta: { public: true, layout: 'auth' } },
   { path: '/forgot-password', name: 'forgot', component: () => import('@/features/auth/ForgotPasswordPage.vue'), meta: { public: true, layout: 'auth' } },
   { path: '/reset-password', name: 'reset', component: () => import('@/features/auth/ResetPasswordPage.vue'), meta: { public: true, layout: 'auth' } },
+  { path: '/auth/line-callback', name: 'line-callback', component: () => import('@/features/auth/LineCallbackPage.vue'), meta: { public: true, layout: 'auth' } },
 
   { path: '/', name: 'home', component: () => import('@/pages/HomePage.vue') },
   { path: '/search', name: 'search', component: () => import('@/features/trips/SearchPage.vue') },

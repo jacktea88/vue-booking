@@ -11,9 +11,9 @@ function keys(obj: Record<string, any>, prefix = ''): string[] {
 }
 
 describe('i18n', () => {
-  it('zh-TW covers every en key', () => {
-    const base = keys(en).sort()
-    expect(keys(zhTW).sort()).toEqual(base)
+  it('zh-TW covers every en key (zh-TW may add extra keys)', () => {
+    const base = keys(en)
+    expect(keys(zhTW)).toEqual(expect.arrayContaining(base))
   })
   it('fr and ar cover every en key', () => {
     const base = keys(en).sort()

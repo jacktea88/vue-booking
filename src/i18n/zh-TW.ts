@@ -18,6 +18,8 @@ export default {
     forgot: '忘記密碼？', reset: '重設密碼', resetSent: '重設連結已寄送至您的信箱。',
     noAccount: '還沒有帳號？', hasAccount: '已經有帳號？', signingIn: '登入中…',
     newPassword: '新密碼', passwordUpdated: '密碼已更新。',
+    lineLogin: '使用 LINE 登入', lineOr: '或', lineSigningIn: 'LINE 登入處理中…',
+    lineLoginFailed: 'LINE 登入失敗，請重試或改用電子信箱登入。', lineLoginCancelled: '已取消 LINE 登入。',
   },
   home: {
     greeting: '您好，{name}', searchTrip: '尋找行程', upcoming: '即將到來的預約', quickActions: '快速操作',

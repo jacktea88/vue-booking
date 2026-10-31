@@ -3,7 +3,8 @@ import { computed, ref } from 'vue'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/services/supabase/client'
 import { profileService } from '@/services/domain'
-import { toAppError } from '@/types/errors'
+import { AppError, toAppError } from '@/types/errors'
+import { lineRedirectUri, takeLineAttempt } from '@/services/auth/line'
 import type { DriverProfile, Profile, UserRole } from '@/types'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -67,6 +68,30 @@ export const useAuthStore = defineStore('auth', () => {
     } finally { loading.value = false }
   }
 
+  /**
+   * LINE Web login, step 2 (callback page). The Edge Function `line-auth` exchanges the code,
+   * verifies the ID token and returns a single-use token_hash, which is then exchanged for a session.
+   * Returns the internal post-login path (or null).
+   */
+  async function signInWithLine(code: string, state: string): Promise<string | null> {
+    const attempt = takeLineAttempt(state)
+    if (!attempt) throw new AppError('UNKNOWN')
+    loading.value = true
+    try {
+      const { data, error } = await supabase.functions.invoke<{ tokenHash?: string }>('line-auth', {
+        body: { code, nonce: attempt.nonce, redirectUri: lineRedirectUri() },
+      })
+      if (error || !data?.tokenHash) throw new AppError('UNKNOWN', error)
+      const { data: otp, error: otpError } = await supabase.auth.verifyOtp({
+        token_hash: data.tokenHash, type: 'magiclink',
+      })
+      if (otpError) throw toAppError(otpError)
+      user.value = otp.user; session.value = otp.session
+      await loadProfile()
+      return attempt.redirectPath
+    } finally { loading.value = false }
+  }
+
   async function signOut(): Promise<void> {
     await supabase.auth.signOut()
     user.value = null; session.value = null; profile.value = null; driverProfile.value = null
@@ -87,6 +112,6 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     user, session, profile, driverProfile, initialized, loading,
     isAuthenticated, role, isDriver, isAdmin, isVerifiedDriver,
-    init, loadProfile, signIn, signUp, signOut, requestPasswordReset, updatePassword,
+    init, loadProfile, signIn, signInWithLine, signUp, signOut, requestPasswordReset, updatePassword,
   }
 })

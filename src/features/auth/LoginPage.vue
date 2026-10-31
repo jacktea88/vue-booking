@@ -4,6 +4,7 @@ import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { toAppError } from '@/types/errors'
+import { isLineLoginEnabled, startLineLogin } from '@/services/auth/line'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -13,6 +14,14 @@ const route = useRoute()
 const email = ref('')
 const password = ref('')
 const error = ref<string | null>(null)
+const lineEnabled = isLineLoginEnabled()
+
+function loginWithLine() {
+  error.value = null
+  try {
+    window.location.assign(startLineLogin((route.query.redirect as string) || null))
+  } catch { error.value = t('auth.lineLoginFailed') }
+}
 
 async function submit() {
   error.value = null
@@ -43,6 +52,14 @@ async function submit() {
         {{ auth.loading ? t('auth.signingIn') : t('auth.login') }}
       </button>
     </form>
+    <template v-if="lineEnabled">
+      <div class="my-4 flex items-center gap-3 text-xs text-slate-400">
+        <span class="h-px flex-1 bg-slate-200"></span>{{ t('auth.lineOr') }}<span class="h-px flex-1 bg-slate-200"></span>
+      </div>
+      <button class="btn-secondary w-full" type="button" :disabled="auth.loading" @click="loginWithLine">
+        {{ t('auth.lineLogin') }}
+      </button>
+    </template>
     <div class="mt-4 flex items-center justify-between text-sm">
       <RouterLink class="text-brand-700 hover:underline" :to="{ name: 'forgot' }">{{ t('auth.forgot') }}</RouterLink>
       <RouterLink class="text-brand-700 hover:underline" :to="{ name: 'register' }">{{ t('auth.register') }}</RouterLink>
