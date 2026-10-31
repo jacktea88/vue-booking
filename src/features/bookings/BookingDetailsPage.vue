@@ -12,7 +12,7 @@ import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
 import { formatDateTime, formatDzd } from '@/utils/format'
 import { toAppError } from '@/types/errors'
-import type { BookingPayment, CancellationQuote, Rating, ResaleListing, TransferRequest } from '@/types'
+import type { CancellationQuote, Rating, ResaleListing, TransferRequest } from '@/types'
 import type { BookingWithTrip } from '@/services/domain/bookingService'
 
 const props = defineProps<{ id: string }>()
@@ -20,7 +20,6 @@ const { t, locale } = useI18n()
 const toast = useToast()
 const auth = useAuthStore()
 
-const payment = ref<BookingPayment | null>(null)
 const transfers = ref<TransferRequest[]>([])
 const listings = ref<ResaleListing[]>([])
 const ratings = ref<Rating[]>([])
@@ -30,7 +29,6 @@ const busy = ref(false)
 
 const view = useAsync<BookingWithTrip>(async () => {
   const b = await bookingService.getBooking(props.id)
-  payment.value = await bookingService.getPayment(props.id)
   transfers.value = await transferService.listForBooking(props.id)
   listings.value = (await resaleService.listForSeller(b.client_id)).filter((l) => l.booking_id === props.id)
   ratings.value = await ratingService.listForBooking(props.id)
@@ -43,15 +41,18 @@ const alreadyRated = computed(() => ratings.value.some((r) => r.from_user_id ===
 const canResell = computed(() => view.data.value?.status === 'confirmed' && !pendingTransfer.value && !openListing.value)
 
 async function openCancel() {
-  try { cancelQuote.value = await bookingService.cancellationQuote(props.id); showCancel.value = true }
-  catch (e) { toast.error(t(toAppError(e).i18nKey)) }
+  try {
+    cancelQuote.value = await bookingService.cancellationQuote(props.id)
+    if (!cancelQuote.value.eligible) { toast.error(t('errors.CANCELLATION_WINDOW_CLOSED')); return }
+    showCancel.value = true
+  } catch (e) { toast.error(t(toAppError(e).i18nKey)) }
 }
 
 async function doCancel() {
   busy.value = true
   try {
-    const res = await bookingService.cancel(props.id)
-    toast.success(res.refund_amount > 0 ? t('payment.refunded', { amount: res.refund_amount }) : t('common.confirm'))
+    await bookingService.cancel(props.id)
+    toast.success(t('booking.cancelled'))
     showCancel.value = false
     await view.run()
   } catch (e) { toast.error(t(toAppError(e).i18nKey)) } finally { busy.value = false }
@@ -91,20 +92,13 @@ onMounted(() => view.run())
           <div><dt class="text-slate-500">{{ t('common.seats') }}</dt><dd class="font-medium">{{ view.data.value.seats }}</dd></div>
           <div><dt class="text-slate-500">{{ t('booking.pricePerSeat') }}</dt><dd class="font-medium">{{ formatDzd(view.data.value.price_per_seat, locale) }}</dd></div>
           <div><dt class="text-slate-500">{{ t('booking.totalAmount') }}</dt><dd class="font-bold text-brand-700">{{ formatDzd(view.data.value.total_amount, locale) }}</dd></div>
-          <div v-if="payment"><dt class="text-slate-500">{{ t('payment.title') }}</dt>
-            <dd><StatusBadge :status="payment.status" :label="t(`payment.status.${payment.status}`)" /></dd></div>
         </dl>
-        <p v-if="payment && payment.refunded_amount > 0" class="mt-2 text-sm text-violet-700">
-          {{ t('payment.refunded', { amount: payment.refunded_amount }) }}
-        </p>
         <p v-if="view.data.value.status === 'pending' && view.data.value.approval_expires_at"
            class="mt-2 text-xs text-amber-700">
           {{ t('booking.expiresIn', { time: formatDateTime(view.data.value.approval_expires_at, locale) }) }}
         </p>
 
         <div class="mt-4 flex flex-wrap gap-2">
-          <RouterLink v-if="payment && ['requires_payment','failed','expired'].includes(payment.status) && ['pending'].includes(view.data.value.status)"
-                      class="btn-primary" :to="{ name: 'checkout', params: { bookingId: id } }">{{ t('booking.payNow') }}</RouterLink>
           <button v-if="['pending','confirmed'].includes(view.data.value.status)" class="btn-danger" @click="openCancel">
             {{ t('booking.cancel') }}
           </button>
@@ -134,9 +128,7 @@ onMounted(() => view.run())
                   :booking-id="id" :title="t('rating.rateDriver')" @rated="view.run()" />
 
       <ConfirmDialog :open="showCancel" :title="t('booking.cancel')" danger :busy="busy"
-                     :message="cancelQuote?.eligible
-                       ? t('booking.cancelRefund', { amount: cancelQuote.refund_amount, pct: cancelQuote.refund_percentage })
-                       : t('booking.cancelNoRefund')"
+                     :message="t('booking.cancelConfirm')"
                      @close="showCancel = false" @confirm="doCancel" />
     </div>
   </AsyncSection>

@@ -35,12 +35,13 @@ async function refreshQuote() {
   catch (e) { toast.error(t(toAppError(e).i18nKey)) }
 }
 
-/** Books then goes to checkout. Seats are reserved atomically server-side. */
+/** Books the trip. Seats are reserved atomically server-side; status depends on the trip's booking mode. */
 async function book() {
   booking.value = true
   try {
     const res = await bookingService.createBooking(props.id, pickupId.value, dropoffId.value, seats.value)
-    await router.push({ name: 'checkout', params: { bookingId: res.booking_id } })
+    toast.success(t(res.status === 'confirmed' ? 'booking.confirmed' : 'booking.pendingApproval'))
+    await router.push({ name: 'booking-details', params: { id: res.booking_id } })
   } catch (e) { toast.error(t(toAppError(e).i18nKey)) } finally { booking.value = false }
 }
 

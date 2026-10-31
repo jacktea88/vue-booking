@@ -1,6 +1,5 @@
 import { supabase } from '@/services/supabase/client'
 import { query, rpc } from '@/services/supabase/rpc'
-import { bookingService } from './bookingService'
 import type { ResaleListing } from '@/types'
 
 export interface ResaleListingView extends ResaleListing {
@@ -34,11 +33,9 @@ export const resaleService = {
       supabase.from('resale_listings').select(SELECT).eq('seller_id', sellerId).order('created_at', { ascending: false }))
   },
 
-  /** Atomic purchase, then pay the newly created buyer booking. */
-  async buy(listingId: string, seats: number) {
-    const res = await rpc<{ booking_id: string; payment_id: string; amount: number; booking_mode: 'auto_confirm' | 'driver_approval' }>(
+  /** Atomic purchase. The buyer booking is pending and requires driver approval. */
+  buy(listingId: string, seats: number) {
+    return rpc<{ booking_id: string; amount: number; booking_mode: 'auto_confirm' | 'driver_approval'; status: 'pending' }>(
       'buy_resale', { p_listing: listingId, p_seats: seats })
-    await bookingService.payBooking(res)
-    return res
   },
 }

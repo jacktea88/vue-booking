@@ -224,7 +224,6 @@ export interface SearchTripRow {
 
 export interface CreateBookingResult {
   booking_id: string
-  payment_id: string
   amount: number
   price_per_seat: number
   booking_mode: BookingMode
@@ -238,11 +237,11 @@ export interface BookingQuote {
   currency: string
 }
 
+/** Cancellation is a non-monetary rule: allowed until `cutoff_at` (departure minus cancellation window). */
 export interface CancellationQuote {
   eligible: boolean
-  refund_percentage: number
-  refund_amount: number
-  paid_amount: number
+  cutoff_at: string
+  window_hours: number
 }
 
 export interface CompatibleTripRow {

@@ -16,9 +16,9 @@ No traditional Node backend. All critical operations are transactional PostgreSQ
 | Segment pricing, booking price = sum of covered segments | `app.segment_price_sum()` |
 | Atomic seat reservation across **every** covered segment | `app.move_seats()` with `SELECT … FOR UPDATE` |
 | No overbooking | `reserved_seats <= capacity` CHECK + locked update |
-| Online payment only, never forgeable by the client | `apply_payment_result` (service-role / dev-mock gated) |
+| Approval-only booking: no payment step; driver or admin approves (auto-confirm trips confirm instantly) | `create_booking` / `confirm_booking` / `reject_booking` |
 | Booking price immutable after confirmation | `guard_booking_price` trigger |
-| 80 % refund when eligible (>24 h before, >30 min after booking), 0 % no-show | `cancellation_quote` / `cancel_booking` / `mark_no_show` |
+| Cancellation allowed until 24 h before departure (non-monetary rule) | `cancellation_quote` / `cancel_booking` |
 | Partial resale, price ceiling, auto-closing listing, atomic locking | `create_resale` / `buy_resale` |
 | Transfer keeps booking identity **and** price | `approve_transfer` |
 | Resale and transfer are mutually exclusive | checks in `create_resale` / `request_transfer` |
@@ -36,13 +36,12 @@ src/
 ├── components/       Reusable UI (AsyncSection, DataTable, PlaceAutocomplete, MapView…)
 ├── layouts/          AppLayout (bottom nav on mobile), AuthLayout
 ├── pages/            Home, 404
-├── features/         auth · profile · trips · bookings · payments · resale · transfers ·
+├── features/         auth · profile · trips · bookings · resale · transfers ·
 │                     notifications · ratings · admin
 ├── services/
 │   ├── supabase/     client (anon key only) + typed rpc/query helpers
 │   ├── maps/         MapProvider abstraction (OSM default, Google adapter)
-│   ├── payments/     PaymentProvider abstraction (mock dev, Edge Function prod)
-│   └── domain/       tripService, bookingService, paymentService, resaleService,
+│   └── domain/       tripService, bookingService, resaleService,
 │                     transferService, notificationService, profileService, adminService
 ├── domain/rules.ts   Pure business rules mirrored from SQL (unit-tested)
 ├── i18n/             ar / fr / en + RTL handling
@@ -50,7 +49,7 @@ src/
 └── utils/
 supabase/
 ├── migrations/0001…0019   ordered, deterministic
-├── functions/payments     Edge Function holding provider secrets
+├── functions/payments     Unused since approval-only flow (kept for later removal)
 ├── functions/expire-bookings
 ├── seed_dev.sql           demo users / verified driver / published trip
 └── config.toml
@@ -83,13 +82,12 @@ Hosted project:
 ```bash
 supabase link --project-ref <ref>
 supabase db push
-supabase functions deploy payments
 supabase functions deploy expire-bookings
 supabase secrets set SUPABASE_SERVICE_ROLE_KEY=<service-role>  # server-side only
 ```
 
 Schedule `expire-bookings` every 5 minutes (pg_cron or Supabase scheduler) so unanswered
-driver-approval bookings release their seats and payment holds.
+driver-approval bookings release their seats.
 
 ### Run
 
@@ -126,18 +124,17 @@ Afterwards admins promote users through the audited `admin_set_role` RPC.
 ## Configuration (DB `settings` table, editable in the admin UI)
 
 `booking_approval_timeout_minutes` (30) · `payment_timeout_minutes` · `resale_payment_timeout_minutes` ·
-`cancellation_window_hours` (24) · `cancellation_min_minutes_after_booking` (30) · `refund_percentage` (80) ·
+`cancellation_window_hours` (24) · `cancellation_min_minutes_after_booking` (30, unused) · `refund_percentage` (80, unused) ·
 `price_base_dzd` · `price_per_km_dzd` · `price_rounding_dzd` · `search_tolerance_meters` · `average_speed_kmh` ·
 `allow_mock_payments` (set to `false` in production) · `payment_provider`.
 
 ## Testing
 
 * `npm test` — 29 unit tests: pricing, segment derivation, route direction, bottleneck seat
-  availability, overbooking refusal, 80 % / 0 % refunds, partial resale + listing closure,
-  transfer price preservation, resale/transfer exclusivity, payment capture vs authorize,
-  error mapping, i18n completeness.
+  availability, overbooking refusal, partial resale + listing closure,
+  transfer price preservation, resale/transfer exclusivity, error mapping, i18n completeness.
 * `tests/sql/business_rules.test.sql` — integration tests against a live database:
-  atomic multi-segment reservation, overbooking rejection, auto-confirm after payment,
+  atomic multi-segment reservation, overbooking rejection, auto-confirm without payment,
   price immutability, resale ceiling + inventory conservation, cancellation eligibility.
 
 ## Deliberately out of MVP scope

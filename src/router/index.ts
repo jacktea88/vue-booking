@@ -12,7 +12,6 @@ const routes: RouteRecordRaw[] = [
   { path: '/', name: 'home', component: () => import('@/pages/HomePage.vue') },
   { path: '/search', name: 'search', component: () => import('@/features/trips/SearchPage.vue') },
   { path: '/trips/:id', name: 'trip-details', component: () => import('@/features/trips/TripDetailsPage.vue'), props: true },
-  { path: '/checkout/:bookingId', name: 'checkout', component: () => import('@/features/payments/CheckoutPage.vue'), props: true },
   { path: '/bookings', name: 'bookings', component: () => import('@/features/bookings/BookingsPage.vue') },
   { path: '/bookings/:id', name: 'booking-details', component: () => import('@/features/bookings/BookingDetailsPage.vue'), props: true },
   { path: '/marketplace', name: 'marketplace', component: () => import('@/features/resale/MarketplacePage.vue') },

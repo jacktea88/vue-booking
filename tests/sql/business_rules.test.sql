@@ -9,7 +9,7 @@ begin;
 
 do $$
 declare v_driver uuid; v_client uuid; v_client2 uuid; v_admin uuid; v_trip uuid;
-        cp0 uuid; cp1 uuid; cp2 uuid; cp3 uuid; v_res jsonb; v_pay uuid; v_booking uuid;
+        cp0 uuid; cp1 uuid; cp2 uuid; cp3 uuid; v_res jsonb; v_booking uuid;
         v_listing uuid; v_transfer uuid; v_trip2 uuid; v_seats int; v_price numeric; v_rows int;
 begin
   select id into v_driver from auth.users where email='driver@demo.test';
@@ -40,7 +40,9 @@ begin
   perform set_config('role','authenticated', true);
   v_res := public.create_booking(v_trip, cp0, cp3, 2);
   v_booking := (v_res->>'booking_id')::uuid;
-  v_pay := (v_res->>'payment_id')::uuid;
+  if v_res ? 'payment_id' then
+    raise exception 'FAIL: create_booking must not return a payment';
+  end if;
 
   if (select min(reserved_seats) from public.trip_segments where trip_id=v_trip) <> 2 then
     raise exception 'FAIL: seats must be reserved on EVERY covered segment';
@@ -54,10 +56,12 @@ begin
     if sqlerrm <> 'NO_SEATS_AVAILABLE' then raise; end if;
   end;
 
-  ---------------------------------------------------------------- payment → auto confirm
-  perform public.apply_payment_result(v_pay, 'paid', 'test_ref');
+  ---------------------------------------------------------------- approval-only: auto confirm without payment
   if (select status from public.bookings where id=v_booking) <> 'confirmed' then
-    raise exception 'FAIL: auto_confirm booking must become confirmed after payment';
+    raise exception 'FAIL: auto_confirm booking must be confirmed immediately (no payment step)';
+  end if;
+  if exists (select 1 from public.booking_payments where booking_id = v_booking) then
+    raise exception 'FAIL: no payment row must be created in the approval-only flow';
   end if;
 
   ---------------------------------------------------------------- price immutability
@@ -102,16 +106,11 @@ begin
     raise exception 'FAIL: resale must not create or destroy seat inventory';
   end if;
 
-  ---------------------------------------------------------------- cancellation 80%
+  ---------------------------------------------------------------- cancellation window (no refund)
   perform set_config('request.jwt.claim.sub', v_client::text, true);
-  -- Age the booking past the 30-minute floor. Must be done with a privileged role,
-  -- because RLS (correctly) gives clients no direct UPDATE on bookings.
-  perform set_config('role', 'postgres', true);
-  update public.bookings set created_at = now() - interval '2 hours' where id = v_booking;
-  perform set_config('role', 'authenticated', true);
   v_res := public.cancellation_quote(v_booking);
-  if (v_res->>'eligible')::boolean is not true or (v_res->>'refund_percentage')::numeric <> 80 then
-    raise exception 'FAIL: cancellation more than 24h before departure must refund 80%%';
+  if (v_res->>'eligible')::boolean is not true then
+    raise exception 'FAIL: cancellation more than 24h before departure must be allowed';
   end if;
 
   ---------------------------------------------------------------- transfer
@@ -188,7 +187,7 @@ begin
   -- The same query as an admin must expose the audited sensitive actions.
   perform set_config('request.jwt.claim.sub', v_admin::text, true);
   if (select count(*) from public.audit_logs where action in
-      ('create_booking','approve_transfer','buy_resale','payment_state_change')) < 4 then
+      ('create_booking','approve_transfer','buy_resale')) < 3 then
     raise exception 'FAIL: sensitive actions must be audited';
   end if;
 

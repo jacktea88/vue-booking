@@ -302,9 +302,6 @@ VITE_SUPABASE_ANON_KEY=sb_publishable_B7RQDC4groafI8zanEt42A_vUq0mwfs
 # 地圖提供商 (OSM 無需 API 密鑰)
 VITE_MAP_PROVIDER=osm
 
-# 支付提供商 (開發模式使用 mock)
-VITE_PAYMENT_PROVIDER=mock
-
 # 默認語言
 VITE_DEFAULT_LOCALE=fr
 ```
