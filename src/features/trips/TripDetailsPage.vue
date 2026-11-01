@@ -57,61 +57,62 @@ watch([pickupId, dropoffId, seats], refreshQuote)
 
 <template>
   <AsyncSection :state="details.state.value" :error="details.error.value" @retry="details.run()">
-    <div v-if="details.data.value" class="space-y-5 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0">
-      <div class="space-y-5 lg:col-span-2">
-        <section class="card">
-          <h1 class="text-lg font-bold">{{ t('trip.details') }}</h1>
-          <p class="mt-1 text-sm text-slate-600">{{ formatDateTime(details.data.value.trip.departure_at, locale) }}</p>
-          <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
-            <span class="badge bg-brand-50 text-brand-700">{{ t(`search.bookingMode.${details.data.value.trip.booking_mode}`) }}</span>
-            <span class="badge bg-slate-100 text-slate-700">{{ t(`trip.status.${details.data.value.trip.status}`) }}</span>
+    <div v-if="details.data.value" class="row g-4">
+      <div class="col-lg-8 d-flex flex-column gap-4">
+        <section class="card card-body rounded-3 shadow-sm">
+          <h1 class="fs-5 fw-bold">{{ t('trip.details') }}</h1>
+          <p class="mt-1 small text-secondary">{{ formatDateTime(details.data.value.trip.departure_at, locale) }}</p>
+          <div class="mt-3 d-flex flex-wrap align-items-center gap-2 fs-xs">
+            <span class="badge rounded-pill bg-brand-light text-primary fw-medium">{{ t(`search.bookingMode.${details.data.value.trip.booking_mode}`) }}</span>
+            <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis fw-medium">{{ t(`trip.status.${details.data.value.trip.status}`) }}</span>
           </div>
-          <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
-            <div><dt class="text-slate-500">{{ t('trip.driver') }}</dt>
-              <dd class="font-medium">{{ details.data.value.driver.full_name }} ★ {{ Number(details.data.value.driver.rating_avg).toFixed(1) }}</dd></div>
-            <div><dt class="text-slate-500">{{ t('trip.vehicle') }}</dt>
-              <dd class="font-medium">{{ details.data.value.vehicle.brand }} {{ details.data.value.vehicle.model }} · {{ details.data.value.vehicle.color }}</dd></div>
+          <dl class="row row-cols-2 g-3 small mt-3 mb-0">
+            <div class="col"><dt class="text-secondary">{{ t('trip.driver') }}</dt>
+              <dd class="fw-medium mb-0">{{ details.data.value.driver.full_name }} ★ {{ Number(details.data.value.driver.rating_avg).toFixed(1) }}</dd></div>
+            <div class="col"><dt class="text-secondary">{{ t('trip.vehicle') }}</dt>
+              <dd class="fw-medium mb-0">{{ details.data.value.vehicle.brand }} {{ details.data.value.vehicle.model }} · {{ details.data.value.vehicle.color }}</dd></div>
           </dl>
         </section>
 
-        <section class="card">
-          <h2 class="text-sm font-semibold text-slate-700">{{ t('trip.checkpoints') }}</h2>
-          <ol class="mt-3 space-y-2">
-            <li v-for="c in checkpoints" :key="c.id" class="flex items-center gap-3 text-sm">
-              <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-bold text-brand-700">
+        <section class="card card-body rounded-3 shadow-sm">
+          <h2 class="fs-6 fw-semibold mb-0">{{ t('trip.checkpoints') }}</h2>
+          <ol class="list-unstyled d-flex flex-column gap-2 mt-3 mb-0">
+            <li v-for="c in checkpoints" :key="c.id" class="d-flex align-items-center gap-3 small">
+              <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-brand-light text-primary fw-bold fs-xs"
+                    style="width: 1.5rem; height: 1.5rem">
                 {{ c.sequence + 1 }}</span>
-              <span class="flex-1">{{ c.name }}</span>
-              <span class="text-xs text-slate-500">{{ formatDateTime(c.estimated_arrival, locale) }}</span>
+              <span class="flex-grow-1">{{ c.name }}</span>
+              <span class="fs-xs text-secondary">{{ formatDateTime(c.estimated_arrival, locale) }}</span>
             </li>
           </ol>
-          <MapView class="mt-4" :markers="markers" :center="markers[0]" />
+          <MapView class="mt-3" :markers="markers" :center="markers[0]" />
         </section>
       </div>
 
-      <aside class="lg:col-span-1">
-        <section class="card lg:sticky lg:top-20">
-          <h2 class="text-sm font-semibold text-slate-700">{{ t('trip.book') }}</h2>
-          <div class="mt-3 space-y-3">
+      <aside class="col-lg-4">
+        <section class="card card-body rounded-3 shadow-sm position-sticky" style="top: 5rem">
+          <h2 class="fs-6 fw-semibold mb-0">{{ t('trip.book') }}</h2>
+          <div class="mt-3 d-flex flex-column gap-3">
             <div>
-              <label class="label" for="pickup">{{ t('trip.pickup') }}</label>
-              <select id="pickup" v-model="pickupId" class="field">
+              <label class="form-label" for="pickup">{{ t('trip.pickup') }}</label>
+              <select id="pickup" v-model="pickupId" class="form-select">
                 <option v-for="c in checkpoints" :key="c.id" :value="c.id">{{ c.sequence + 1 }}. {{ c.name }}</option>
               </select>
             </div>
             <div>
-              <label class="label" for="dropoff">{{ t('trip.dropoff') }}</label>
-              <select id="dropoff" v-model="dropoffId" class="field">
+              <label class="form-label" for="dropoff">{{ t('trip.dropoff') }}</label>
+              <select id="dropoff" v-model="dropoffId" class="form-select">
                 <option v-for="c in checkpoints" :key="c.id" :value="c.id">{{ c.sequence + 1 }}. {{ c.name }}</option>
               </select>
             </div>
             <SeatStepper v-model="seats" :max="Math.max(1, quote?.available_seats ?? 1)" :label="t('common.seats')" />
-            <div v-if="quote" class="rounded-lg bg-slate-50 p-3 text-sm">
-              <div class="flex justify-between"><span>{{ t('booking.pricePerSeat') }}</span><span class="font-medium">{{ formatDzd(quote.price_per_seat, locale) }}</span></div>
-              <div class="mt-1 flex justify-between"><span>{{ t('booking.totalAmount') }}</span><span class="font-bold text-brand-700">{{ formatDzd(quote.total_amount, locale) }}</span></div>
-              <p class="mt-2 text-xs text-slate-500">{{ t('search.availableSeats', { n: quote.available_seats }) }}</p>
+            <div v-if="quote" class="rounded-3 bg-light p-3 small">
+              <div class="d-flex justify-content-between"><span>{{ t('booking.pricePerSeat') }}</span><span class="fw-medium">{{ formatDzd(quote.price_per_seat, locale) }}</span></div>
+              <div class="mt-1 d-flex justify-content-between"><span>{{ t('booking.totalAmount') }}</span><span class="fw-bold text-primary">{{ formatDzd(quote.total_amount, locale) }}</span></div>
+              <p class="mt-2 mb-0 fs-xs text-secondary">{{ t('search.availableSeats', { n: quote.available_seats }) }}</p>
             </div>
-            <p class="text-xs text-slate-500">{{ t('booking.onlineOnly') }}</p>
-            <button class="btn-primary w-full" :disabled="booking || !quote || quote.available_seats < seats" @click="book">
+            <p class="small text-secondary mb-0">{{ t('booking.onlineOnly') }}</p>
+            <button class="btn btn-primary w-100" :disabled="booking || !quote || quote.available_seats < seats" @click="book">
               {{ t('trip.book') }}
             </button>
           </div>

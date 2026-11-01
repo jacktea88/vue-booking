@@ -17,10 +17,10 @@ export class OsmMapProvider implements MapProvider {
     const zoom = options?.zoom ?? 6
     container.innerHTML = ''
     const frame = document.createElement('div')
-    frame.className = 'relative h-full w-full overflow-hidden rounded-xl bg-slate-200'
+    frame.className = 'position-relative h-100 w-100 overflow-hidden rounded-3 bg-secondary-subtle'
     const img = document.createElement('iframe')
     img.title = 'map'
-    img.className = 'h-full w-full border-0'
+    img.className = 'h-100 w-100 border-0'
     img.loading = 'lazy'
     const d = 2.5
     img.src = `${'https://www.openstreetmap.org/export/embed.html'}?bbox=${center.lng - d}%2C${center.lat - d}%2C${

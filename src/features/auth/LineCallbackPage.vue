@@ -30,11 +30,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="card mt-6 text-center">
-    <p v-if="!error" class="text-sm text-slate-600" role="status">{{ t('auth.lineSigningIn') }}</p>
+  <section class="card card-body mt-4 rounded-3 shadow-sm text-center">
+    <p v-if="!error" class="small text-secondary mb-0" role="status">{{ t('auth.lineSigningIn') }}</p>
     <template v-else>
-      <p class="text-sm text-red-700" role="alert">{{ error }}</p>
-      <RouterLink class="btn-primary mt-4 inline-block" :to="{ name: 'login' }">{{ t('auth.login') }}</RouterLink>
+      <p class="small text-danger" role="alert">{{ error }}</p>
+      <RouterLink class="btn btn-primary mt-3" :to="{ name: 'login' }">{{ t('auth.login') }}</RouterLink>
     </template>
   </section>
 </template>

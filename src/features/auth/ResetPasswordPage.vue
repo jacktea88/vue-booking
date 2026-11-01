@@ -20,13 +20,13 @@ async function submit() {
 </script>
 
 <template>
-  <section class="card mt-6">
-    <h1 class="text-xl font-bold">{{ t('auth.newPassword') }}</h1>
-    <form class="mt-5 space-y-4" @submit.prevent="submit">
-      <input v-model="password" class="field" type="password" minlength="8" required :aria-label="t('auth.newPassword')" />
-      <p v-if="error" class="text-sm text-red-700" role="alert">{{ error }}</p>
-      <p v-if="done" class="text-sm text-emerald-700">{{ t('auth.passwordUpdated') }}</p>
-      <button class="btn-primary w-full" type="submit">{{ t('common.save') }}</button>
+  <section class="card card-body mt-4 rounded-3 shadow-sm">
+    <h1 class="fs-4 fw-bold">{{ t('auth.newPassword') }}</h1>
+    <form class="d-flex flex-column gap-3 mt-3" @submit.prevent="submit">
+      <input v-model="password" class="form-control" type="password" minlength="8" required :aria-label="t('auth.newPassword')" />
+      <p v-if="error" class="small text-danger mb-0" role="alert">{{ error }}</p>
+      <p v-if="done" class="small text-success mb-0">{{ t('auth.passwordUpdated') }}</p>
+      <button class="btn btn-primary w-100" type="submit">{{ t('common.save') }}</button>
     </form>
   </section>
 </template>

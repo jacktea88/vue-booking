@@ -10,7 +10,8 @@ import ToastHost from '@/components/ToastHost.vue'
 
 const route = useRoute()
 const auth = useAuthStore()
-const locale = useLocaleStore()
+// instantiating the locale store applies <html lang> on first paint
+useLocaleStore()
 const notifications = useNotificationStore()
 
 const layout = computed(() => (route.meta.layout === 'auth' ? AuthLayout : AppLayout))
@@ -23,7 +24,7 @@ watch(() => auth.user?.id, (id) => {
 </script>
 
 <template>
-  <div :dir="locale.rtl ? 'rtl' : 'ltr'" class="min-h-dvh">
+  <div dir="ltr" class="min-h-dvh">
     <component :is="layout">
       <RouterView v-slot="{ Component }">
         <component :is="Component" />

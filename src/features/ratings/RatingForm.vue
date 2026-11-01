@@ -24,15 +24,15 @@ async function submit() {
 </script>
 
 <template>
-  <form class="card" @submit.prevent="submit">
-    <h2 class="text-sm font-semibold text-slate-700">{{ title }}</h2>
-    <div class="mt-3 flex items-center gap-1" role="radiogroup" :aria-label="t('rating.rate')">
-      <button v-for="n in 5" :key="n" type="button" class="text-2xl leading-none"
-              :class="n <= rating ? 'text-amber-500' : 'text-slate-300'"
+  <form class="card card-body rounded-3 shadow-sm" @submit.prevent="submit">
+    <h2 class="fs-6 fw-semibold mb-0">{{ title }}</h2>
+    <div class="mt-3 d-flex align-items-center gap-1" role="radiogroup" :aria-label="t('rating.rate')">
+      <button v-for="n in 5" :key="n" type="button" class="btn btn-link p-0 text-decoration-none fs-2 lh-1"
+              :class="n <= rating ? 'text-warning' : 'text-body-tertiary'"
               role="radio" :aria-checked="n === rating" :aria-label="String(n)" @click="rating = n">★</button>
     </div>
-    <label class="label mt-3" for="comment">{{ t('rating.comment') }} ({{ t('common.optional') }})</label>
-    <textarea id="comment" v-model="comment" class="field" rows="2" />
-    <button class="btn-primary mt-3" type="submit" :disabled="busy">{{ t('common.submit') }}</button>
+    <label class="form-label mt-3" for="comment">{{ t('rating.comment') }} ({{ t('common.optional') }})</label>
+    <textarea id="comment" v-model="comment" class="form-control" rows="2" />
+    <button class="btn btn-primary mt-3" type="submit" :disabled="busy">{{ t('common.submit') }}</button>
   </form>
 </template>

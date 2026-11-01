@@ -5,12 +5,12 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="flex min-h-dvh flex-col bg-slate-50">
-    <header class="flex items-center justify-between p-4">
-      <span class="text-lg font-bold text-brand-700">{{ t('app.name') }}</span>
+  <div class="d-flex flex-column min-h-dvh bg-light">
+    <header class="d-flex align-items-center justify-content-between p-3">
+      <span class="fs-5 fw-bold text-primary">{{ t('app.name') }}</span>
       <LanguageSwitcher />
     </header>
-    <main class="mx-auto w-full max-w-md flex-1 px-4 pb-10">
+    <main class="mx-auto w-100 mw-md flex-grow-1 px-3 pb-5">
       <slot />
     </main>
   </div>

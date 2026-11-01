@@ -23,43 +23,46 @@ onMounted(() => trips.run())
 </script>
 
 <template>
-  <div class="space-y-5">
-    <section class="rounded-2xl bg-brand-700 p-5 text-white">
-      <h1 class="text-lg font-semibold">{{ t('home.greeting', { name: auth.profile?.full_name || '…' }) }}</h1>
-      <p v-if="!auth.isVerifiedDriver" class="mt-2 rounded-lg bg-white/15 p-2 text-sm">{{ t('profile.driverNotVerified') }}</p>
-      <RouterLink class="mt-4 inline-flex rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-brand-700"
+  <div class="d-flex flex-column gap-4">
+    <section class="rounded-4 bg-primary text-white p-4">
+      <h1 class="fs-5 fw-semibold mb-0">{{ t('home.greeting', { name: auth.profile?.full_name || '…' }) }}</h1>
+      <p v-if="!auth.isVerifiedDriver" class="mt-2 mb-0 rounded-3 bg-white-15 p-2 small">{{ t('profile.driverNotVerified') }}</p>
+      <RouterLink class="btn btn-light mt-3 fw-semibold text-primary"
                   :to="{ name: 'driver-create-trip' }">{{ t('home.createTrip') }}</RouterLink>
     </section>
 
     <AsyncSection :state="trips.state.value" :error="trips.error.value" :empty-text="t('trip.noTrips')" @retry="trips.run()">
-      <section v-if="current" class="space-y-2">
-        <h2 class="text-sm font-semibold text-slate-700">{{ t('home.currentTrip') }}</h2>
-        <RouterLink class="card block" :to="{ name: 'driver-trip-details', params: { id: current.id } }">
-          <div class="flex justify-between">
+      <section v-if="current" class="d-flex flex-column gap-2">
+        <h2 class="small fw-semibold text-secondary mb-0">{{ t('home.currentTrip') }}</h2>
+        <RouterLink class="card card-body rounded-3 shadow-sm d-block text-body text-decoration-none hover-border-primary"
+                    :to="{ name: 'driver-trip-details', params: { id: current.id } }">
+          <div class="d-flex justify-content-between align-items-center gap-2">
             <span>{{ formatDateTime(current.departure_at, locale) }}</span>
             <StatusBadge :status="current.status" :label="t(`trip.status.${current.status}`)" />
           </div>
         </RouterLink>
       </section>
 
-      <section class="mt-4 space-y-2">
-        <h2 class="text-sm font-semibold text-slate-700">{{ t('home.driverToday') }}</h2>
-        <p v-if="!today.length" class="card text-sm text-slate-500">{{ t('states.empty') }}</p>
-        <RouterLink v-for="trip in today" :key="trip.id" class="card block"
+      <section class="mt-4 d-flex flex-column gap-2">
+        <h2 class="small fw-semibold text-secondary mb-0">{{ t('home.driverToday') }}</h2>
+        <p v-if="!today.length" class="card card-body rounded-3 shadow-sm small text-secondary mb-0">{{ t('states.empty') }}</p>
+        <RouterLink v-for="trip in today" :key="trip.id"
+                    class="card card-body rounded-3 shadow-sm d-block text-body text-decoration-none hover-border-primary"
                     :to="{ name: 'driver-trip-details', params: { id: trip.id } }">
-          <div class="flex justify-between">
+          <div class="d-flex justify-content-between align-items-center gap-2">
             <span>{{ formatDateTime(trip.departure_at, locale) }}</span>
             <StatusBadge :status="trip.status" :label="t(`trip.status.${trip.status}`)" />
           </div>
         </RouterLink>
       </section>
 
-      <section class="mt-4 space-y-2">
-        <h2 class="text-sm font-semibold text-slate-700">{{ t('home.driverUpcoming') }}</h2>
-        <p v-if="!upcoming.length" class="card text-sm text-slate-500">{{ t('states.empty') }}</p>
-        <RouterLink v-for="trip in upcoming" :key="trip.id" class="card block"
+      <section class="mt-4 d-flex flex-column gap-2">
+        <h2 class="small fw-semibold text-secondary mb-0">{{ t('home.driverUpcoming') }}</h2>
+        <p v-if="!upcoming.length" class="card card-body rounded-3 shadow-sm small text-secondary mb-0">{{ t('states.empty') }}</p>
+        <RouterLink v-for="trip in upcoming" :key="trip.id"
+                    class="card card-body rounded-3 shadow-sm d-block text-body text-decoration-none hover-border-primary"
                     :to="{ name: 'driver-trip-details', params: { id: trip.id } }">
-          <div class="flex justify-between">
+          <div class="d-flex justify-content-between align-items-center gap-2">
             <span>{{ formatDateTime(trip.departure_at, locale) }}</span>
             <StatusBadge :status="trip.status" :label="t(`trip.status.${trip.status}`)" />
           </div>

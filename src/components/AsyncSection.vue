@@ -9,14 +9,16 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div v-if="state === 'loading'" class="space-y-3" role="status" :aria-label="t('states.loading')">
-    <div v-for="i in 3" :key="i" class="h-20 animate-pulse rounded-xl bg-slate-200/70" />
+  <div v-if="state === 'loading'" class="d-flex flex-column gap-3" role="status" :aria-label="t('states.loading')">
+    <div v-for="i in 3" :key="i" class="placeholder-glow">
+      <span class="placeholder w-100 rounded-3" style="height: 5rem" />
+    </div>
   </div>
-  <div v-else-if="state === 'error'" class="card text-center">
-    <p class="text-sm text-red-700">{{ error ? t(error.i18nKey) : t('states.error') }}</p>
-    <button class="btn-secondary mt-3" @click="$emit('retry')">{{ t('common.retry') }}</button>
+  <div v-else-if="state === 'error'" class="card card-body rounded-3 shadow-sm text-center">
+    <p class="small text-danger mb-0">{{ error ? t(error.i18nKey) : t('states.error') }}</p>
+    <button class="btn btn-outline-secondary mt-3" @click="$emit('retry')">{{ t('common.retry') }}</button>
   </div>
-  <div v-else-if="state === 'empty'" class="card text-center text-sm text-slate-500">
+  <div v-else-if="state === 'empty'" class="card card-body rounded-3 shadow-sm text-center small text-secondary">
     {{ emptyText ?? t('states.empty') }}
   </div>
   <slot v-else />

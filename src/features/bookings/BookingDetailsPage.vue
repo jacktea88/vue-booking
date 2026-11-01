@@ -79,46 +79,46 @@ onMounted(() => view.run())
 
 <template>
   <AsyncSection :state="view.state.value" :error="view.error.value" @retry="view.run()">
-    <div v-if="view.data.value" class="space-y-4">
-      <section class="card">
-        <div class="flex items-start justify-between gap-3">
+    <div v-if="view.data.value" class="d-flex flex-column gap-4">
+      <section class="card card-body rounded-3 shadow-sm">
+        <div class="d-flex align-items-start justify-content-between gap-3">
           <div>
-            <h1 class="text-lg font-bold">{{ view.data.value.pickup?.name }} → {{ view.data.value.dropoff?.name }}</h1>
-            <p class="mt-1 text-sm text-slate-500">{{ formatDateTime(view.data.value.trips?.departure_at, locale) }}</p>
+            <h1 class="fs-5 fw-bold">{{ view.data.value.pickup?.name }} → {{ view.data.value.dropoff?.name }}</h1>
+            <p class="mt-1 small text-secondary">{{ formatDateTime(view.data.value.trips?.departure_at, locale) }}</p>
           </div>
           <StatusBadge :status="view.data.value.status" :label="t(`booking.status.${view.data.value.status}`)" />
         </div>
-        <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
-          <div><dt class="text-slate-500">{{ t('common.seats') }}</dt><dd class="font-medium">{{ view.data.value.seats }}</dd></div>
-          <div><dt class="text-slate-500">{{ t('booking.pricePerSeat') }}</dt><dd class="font-medium">{{ formatDzd(view.data.value.price_per_seat, locale) }}</dd></div>
-          <div><dt class="text-slate-500">{{ t('booking.totalAmount') }}</dt><dd class="font-bold text-brand-700">{{ formatDzd(view.data.value.total_amount, locale) }}</dd></div>
+        <dl class="row row-cols-2 g-3 small mt-3 mb-0">
+          <div class="col"><dt class="text-secondary">{{ t('common.seats') }}</dt><dd class="fw-medium mb-0">{{ view.data.value.seats }}</dd></div>
+          <div class="col"><dt class="text-secondary">{{ t('booking.pricePerSeat') }}</dt><dd class="fw-medium mb-0">{{ formatDzd(view.data.value.price_per_seat, locale) }}</dd></div>
+          <div class="col"><dt class="text-secondary">{{ t('booking.totalAmount') }}</dt><dd class="fw-bold text-primary mb-0">{{ formatDzd(view.data.value.total_amount, locale) }}</dd></div>
         </dl>
         <p v-if="view.data.value.status === 'pending' && view.data.value.approval_expires_at"
-           class="mt-2 text-xs text-amber-700">
+           class="mt-2 mb-0 small text-warning-emphasis">
           {{ t('booking.expiresIn', { time: formatDateTime(view.data.value.approval_expires_at, locale) }) }}
         </p>
 
-        <div class="mt-4 flex flex-wrap gap-2">
-          <button v-if="['pending','confirmed'].includes(view.data.value.status)" class="btn-danger" @click="openCancel">
+        <div class="mt-3 d-flex flex-wrap gap-2">
+          <button v-if="['pending','confirmed'].includes(view.data.value.status)" class="btn btn-danger" @click="openCancel">
             {{ t('booking.cancel') }}
           </button>
         </div>
       </section>
 
-      <section v-if="pendingTransfer" class="card border-amber-300 bg-amber-50/50">
-        <h2 class="text-sm font-semibold">{{ t('transfer.pending') }}</h2>
-        <p class="mt-1 text-sm text-slate-600">{{ t('transfer.priceUnchanged') }}</p>
-        <div class="mt-3 flex gap-2">
-          <button class="btn-primary" :disabled="busy" @click="respondTransfer(true)">{{ t('transfer.approve') }}</button>
-          <button class="btn-secondary" :disabled="busy" @click="respondTransfer(false)">{{ t('transfer.reject') }}</button>
+      <section v-if="pendingTransfer" class="card card-body rounded-3 shadow-sm border-amber-300 bg-amber-light">
+        <h2 class="small fw-semibold mb-0">{{ t('transfer.pending') }}</h2>
+        <p class="mt-1 small text-secondary mb-0">{{ t('transfer.priceUnchanged') }}</p>
+        <div class="mt-3 d-flex gap-2">
+          <button class="btn btn-primary" :disabled="busy" @click="respondTransfer(true)">{{ t('transfer.approve') }}</button>
+          <button class="btn btn-outline-secondary" :disabled="busy" @click="respondTransfer(false)">{{ t('transfer.reject') }}</button>
         </div>
       </section>
 
-      <section v-if="openListing" class="card">
-        <h2 class="text-sm font-semibold">{{ t('resale.title') }}</h2>
-        <p class="mt-1 text-sm">{{ t('resale.sold', { sold: openListing.seats_sold, total: openListing.seats_for_sale }) }}
+      <section v-if="openListing" class="card card-body rounded-3 shadow-sm">
+        <h2 class="small fw-semibold mb-0">{{ t('resale.title') }}</h2>
+        <p class="mt-1 small mb-0">{{ t('resale.sold', { sold: openListing.seats_sold, total: openListing.seats_for_sale }) }}
           · {{ formatDzd(openListing.price_per_seat, locale) }}</p>
-        <button class="btn-secondary mt-3" @click="cancelListingNow(openListing.id)">{{ t('resale.cancelListing') }}</button>
+        <button class="btn btn-outline-secondary mt-3" @click="cancelListingNow(openListing.id)">{{ t('resale.cancelListing') }}</button>
       </section>
 
       <CreateResaleForm v-else-if="canResell" :booking-id="id" :max-seats="view.data.value.seats"

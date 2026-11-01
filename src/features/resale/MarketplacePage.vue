@@ -28,27 +28,29 @@ onMounted(() => listings.run())
 </script>
 
 <template>
-  <div class="space-y-4">
-    <h1 class="text-xl font-bold">{{ t('resale.marketplace') }}</h1>
+  <div class="d-flex flex-column gap-3">
+    <h1 class="fs-4 fw-bold">{{ t('resale.marketplace') }}</h1>
     <AsyncSection :state="listings.state.value" :error="listings.error.value"
                   :empty-text="t('resale.none')" @retry="listings.run()">
-      <ul class="grid gap-3 sm:grid-cols-2">
-        <li v-for="l in listings.data.value ?? []" :key="l.id" class="card">
-          <p class="font-medium">{{ l.bookings?.pickup?.name }} → {{ l.bookings?.dropoff?.name }}</p>
-          <p class="mt-1 text-xs text-slate-500">{{ formatDateTime(l.bookings?.trips?.departure_at ?? null, locale) }}</p>
-          <div class="mt-2 flex items-center justify-between">
-            <span class="text-sm text-slate-600">{{ t('resale.sold', { sold: l.seats_sold, total: l.seats_for_sale }) }}</span>
-            <span class="text-base font-bold text-brand-700">{{ formatDzd(l.price_per_seat, locale) }}</span>
-          </div>
-          <div class="mt-3 flex items-end gap-2">
-            <div class="flex-1">
-              <label class="label" :for="`q-${l.id}`">{{ t('resale.buySeats') }}</label>
-              <input :id="`q-${l.id}`" v-model.number="qty[l.id]" class="field" type="number" min="1"
-                     :max="l.seats_for_sale - l.seats_sold" :placeholder="'1'" />
+      <ul class="row row-cols-1 row-cols-sm-2 g-3 list-unstyled mb-0">
+        <li v-for="l in listings.data.value ?? []" :key="l.id" class="col">
+          <div class="card card-body rounded-3 shadow-sm h-100">
+            <p class="fw-medium mb-0">{{ l.bookings?.pickup?.name }} → {{ l.bookings?.dropoff?.name }}</p>
+            <p class="mt-1 fs-xs text-secondary mb-0">{{ formatDateTime(l.bookings?.trips?.departure_at ?? null, locale) }}</p>
+            <div class="mt-2 d-flex align-items-center justify-content-between">
+              <span class="small text-secondary">{{ t('resale.sold', { sold: l.seats_sold, total: l.seats_for_sale }) }}</span>
+              <span class="fs-6 fw-bold text-primary">{{ formatDzd(l.price_per_seat, locale) }}</span>
             </div>
-            <button class="btn-primary" :disabled="buying === l.id" @click="buy(l.id, l.seats_for_sale - l.seats_sold)">
-              {{ t('resale.buy') }}
-            </button>
+            <div class="mt-3 d-flex align-items-end gap-2">
+              <div class="flex-grow-1">
+                <label class="form-label" :for="`q-${l.id}`">{{ t('resale.buySeats') }}</label>
+                <input :id="`q-${l.id}`" v-model.number="qty[l.id]" class="form-control" type="number" min="1"
+                       :max="l.seats_for_sale - l.seats_sold" :placeholder="'1'" />
+              </div>
+              <button class="btn btn-primary" :disabled="buying === l.id" @click="buy(l.id, l.seats_for_sale - l.seats_sold)">
+                {{ t('resale.buy') }}
+              </button>
+            </div>
           </div>
         </li>
       </ul>

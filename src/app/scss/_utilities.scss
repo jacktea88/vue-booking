@@ -1,0 +1,94 @@
+// Project utilities that have no Bootstrap 5 equivalent.
+
+// Arbitrary font sizes (replacing Tailwind text-[10px] / text-[11px]).
+.fs-xxs { font-size: 10px; }
+.fs-xs { font-size: 11px; }
+
+// Skeleton loading pulse (used by AsyncSection).
+@keyframes wassalni-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+.animate-pulse { animation: wassalni-pulse 2s cubic-bezier(.4, 0, .6, 1) infinite; }
+
+// Semi-transparent white background.
+.bg-white-95 { background-color: rgba(255, 255, 255, .95); }
+
+// Violet status colours (no Bootstrap contextual colour for violet).
+.bg-violet-subtle { background-color: #ede9fe; }
+.text-violet-emphasis { color: #5b21b6; }
+
+// Max heights and numeric alignment (Tailwind max-h-60 / tabular-nums equivalents).
+.max-h-60 { max-height: 15rem; }
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+// Allow flex children to shrink below content width so text-truncate works.
+.min-w-0 { min-width: 0; }
+
+// Translucent white panel on brand backgrounds (Bootstrap 5.3 has no bg-opacity-*).
+.bg-white-15 { background-color: rgba(255, 255, 255, 0.15); }
+
+// Modal backdrop tint (Bootstrap 5.3 has no bg-opacity-* utilities).
+.bg-overlay { background-color: rgba(15, 23, 42, .5); }
+
+// z-index levels beyond Bootstrap's built-in z-3.
+.z-30 { z-index: 1030; }
+.z-50 { z-index: 1050; }
+
+// Max widths (Tailwind max-w-sm / max-w-md equivalents).
+.mw-sm { max-width: 24rem; }
+.mw-md { max-width: 28rem; }
+
+// Toast stack above the bottom nav on mobile, bottom-right gap on larger screens.
+.toast-host {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 5rem;
+  z-index: 1050;
+  pointer-events: none;
+  @media (min-width: 576px) { bottom: 1.5rem; }
+}
+
+// Viewport-height container.
+.min-h-dvh { min-height: 100dvh; }
+
+// Brand / status colour helpers.
+.bg-brand-light { background-color: rgba(var(--bs-primary-rgb), .1); }
+.bg-amber-light { background-color: rgba(var(--bs-warning-rgb), .1); }
+.border-amber-300 { border-color: #fcd34d !important; }
+.text-violet { color: #6d28d9 !important; }
+
+// Hover border in brand colour.
+.hover-border-primary:hover { border-color: var(--bs-primary) !important; }
+
+// Table: keep a minimum width inside responsive wrappers so columns do not collapse (matches former .table min-width 640px).
+.table-responsive > .table { min-width: 640px; }
+
+// Bottom padding so content is not covered by the mobile bottom navigation.
+.pb-bottom-nav { padding-bottom: 5rem; }
+
+// Mobile bottom tab bar (AppLayout).
+.bottom-nav {
+  z-index: 1030;
+
+  ul { list-style: none; margin: 0; padding: 0; display: flex; }
+  li { flex: 1; }
+  a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: .625rem .5rem;
+    font-size: .6875rem;
+    font-weight: 500;
+    color: var(--bs-secondary-color, var(--bs-secondary));
+    text-decoration: none;
+
+    &.active { color: var(--bs-primary); }
+  }
+}
+
+// Main content needs room above the bottom nav on mobile.
+@media (max-width: 767.98px) {
+  .main-content { padding-bottom: 5rem; }
+}

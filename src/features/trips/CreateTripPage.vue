@@ -55,21 +55,21 @@ async function submit() {
 </script>
 
 <template>
-  <form class="space-y-4" @submit.prevent="submit">
-    <h1 class="text-xl font-bold">{{ t('home.createTrip') }}</h1>
-    <p v-if="!auth.isVerifiedDriver" class="card border-amber-300 bg-amber-50 text-sm text-amber-800">
+  <form class="d-flex flex-column gap-4" @submit.prevent="submit">
+    <h1 class="fs-4 fw-bold mb-0">{{ t('home.createTrip') }}</h1>
+    <p v-if="!auth.isVerifiedDriver" class="card card-body rounded-3 border-amber-300 bg-amber-light small text-warning-emphasis mb-0">
       {{ t('profile.driverNotVerified') }}
     </p>
 
-    <section class="card space-y-4">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label class="label" for="dep">{{ t('trip.departureAt') }}</label>
-          <input id="dep" v-model="departureAt" class="field" type="datetime-local" required />
+    <section class="card card-body rounded-3 shadow-sm">
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <label class="form-label" for="dep">{{ t('trip.departureAt') }}</label>
+          <input id="dep" v-model="departureAt" class="form-control" type="datetime-local" required />
         </div>
-        <div>
-          <label class="label" for="mode">{{ t('trip.mode') }}</label>
-          <select id="mode" v-model="mode" class="field">
+        <div class="col-sm-6">
+          <label class="form-label" for="mode">{{ t('trip.mode') }}</label>
+          <select id="mode" v-model="mode" class="form-select">
             <option value="auto_confirm">{{ t('search.bookingMode.auto_confirm') }}</option>
             <option value="driver_approval">{{ t('search.bookingMode.driver_approval') }}</option>
           </select>
@@ -77,34 +77,37 @@ async function submit() {
       </div>
     </section>
 
-    <section class="card space-y-4">
-      <h2 class="text-sm font-semibold text-slate-700">{{ t('trip.checkpoints') }}</h2>
-      <div v-for="(row, i) in rows" :key="row.id" class="rounded-lg border border-slate-200 p-3">
-        <div class="flex items-start gap-2">
-          <span class="mt-7 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-bold text-brand-700">
+    <section class="card card-body rounded-3 shadow-sm d-flex flex-column gap-3">
+      <h2 class="fs-6 fw-semibold mb-0">{{ t('trip.checkpoints') }}</h2>
+      <div v-for="(row, i) in rows" :key="row.id" class="rounded-3 border p-3">
+        <div class="d-flex align-items-start gap-2">
+          <span class="mt-4 d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-circle bg-brand-light text-primary fw-bold small"
+                style="width: 1.5rem; height: 1.5rem">
             {{ i + 1 }}
           </span>
-          <div class="flex-1">
+          <div class="flex-grow-1">
             <PlaceAutocomplete v-model="row.place" :label="`${t('trip.checkpoints')} ${i + 1}`"
                                :allow-current-location="i === 0" />
           </div>
         </div>
-        <div class="mt-2 flex gap-2 text-xs">
-          <button type="button" class="btn-ghost px-2 py-1" :disabled="i === 0" @click="move(i, -1)">{{ t('trip.moveUp') }}</button>
-          <button type="button" class="btn-ghost px-2 py-1" :disabled="i === rows.length - 1" @click="move(i, 1)">{{ t('trip.moveDown') }}</button>
-          <button type="button" class="btn-ghost px-2 py-1 text-red-600" :disabled="rows.length <= 2" @click="remove(i)">{{ t('trip.removeCheckpoint') }}</button>
+        <div class="mt-2 d-flex gap-2 small">
+          <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" :disabled="i === 0" @click="move(i, -1)">{{ t('trip.moveUp') }}</button>
+          <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" :disabled="i === rows.length - 1" @click="move(i, 1)">{{ t('trip.moveDown') }}</button>
+          <button type="button" class="btn btn-link btn-sm p-0 text-danger text-decoration-none" :disabled="rows.length <= 2" @click="remove(i)">{{ t('trip.removeCheckpoint') }}</button>
         </div>
       </div>
-      <button type="button" class="btn-secondary" @click="add">{{ t('trip.addCheckpoint') }}</button>
       <div>
-        <p class="label">{{ t('trip.pickOnMap') }}</p>
+        <button type="button" class="btn btn-outline-secondary" @click="add">{{ t('trip.addCheckpoint') }}</button>
+      </div>
+      <div>
+        <p class="form-label">{{ t('trip.pickOnMap') }}</p>
         <MapView
           :markers="rows.filter(r => r.place).map(r => ({ lat: r.place!.point.lat, lng: r.place!.point.lng }))"
           @pick="pickOnMap" />
       </div>
     </section>
 
-    <p class="text-xs text-slate-500">{{ t('trip.pricingHint') }}</p>
-    <button class="btn-primary w-full" type="submit" :disabled="busy">{{ t('common.next') }}</button>
+    <p class="small text-secondary mb-0">{{ t('trip.pricingHint') }}</p>
+    <button class="btn btn-primary w-100" type="submit" :disabled="busy">{{ t('common.next') }}</button>
   </form>
 </template>

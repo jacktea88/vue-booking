@@ -36,50 +36,48 @@ const isActive = (name: string) => route.name === name
 </script>
 
 <template>
-  <div class="flex min-h-dvh flex-col bg-slate-50">
-    <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+  <div class="d-flex flex-column min-h-dvh bg-light">
+    <header class="sticky-top bg-white-95 border-bottom">
+      <div class="container-xl d-flex align-items-center justify-content-between gap-3 py-2">
         <RouterLink :to="{ name: auth.isAdmin ? 'admin' : auth.isDriver ? 'driver-home' : 'home' }"
-                    class="text-lg font-bold text-brand-700">{{ t('app.name') }}</RouterLink>
+                    class="fs-5 fw-bold text-primary text-decoration-none">{{ t('app.name') }}</RouterLink>
 
-        <nav class="hidden items-center gap-1 md:flex" :aria-label="t('nav.home')">
+        <nav class="nav nav-pills d-none d-md-flex align-items-center gap-1" :aria-label="t('nav.home')">
           <RouterLink v-for="item in nav" :key="item.name" :to="{ name: item.name }"
-                      class="rounded-lg px-3 py-2 text-sm font-medium"
-                      :class="isActive(item.name) ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-slate-100'">
+                      class="nav-link py-2 px-3 small fw-medium"
+                      :class="{ active: isActive(item.name) }">
             {{ t(item.label) }}
           </RouterLink>
           <RouterLink v-if="!auth.isAdmin" :to="{ name: 'marketplace' }"
-                      class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
+                      class="nav-link py-2 px-3 small fw-medium text-secondary">
             {{ t('nav.resale') }}
           </RouterLink>
         </nav>
 
-        <div class="flex items-center gap-2">
-          <RouterLink :to="{ name: 'notifications' }" class="relative rounded-lg p-2 hover:bg-slate-100"
+        <div class="d-flex align-items-center gap-2">
+          <RouterLink :to="{ name: 'notifications' }" class="btn btn-link position-relative p-2 lh-1 text-body text-decoration-none"
                       :aria-label="t('nav.notifications')">
             <span aria-hidden="true">🔔</span>
             <span v-if="notifications.unreadCount"
-                  class="absolute -top-0.5 -end-0.5 min-w-4 rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                  class="badge rounded-pill bg-danger fs-xxs fw-bold position-absolute top-0 start-100 translate-middle">
               {{ notifications.unreadCount }}
             </span>
           </RouterLink>
           <LanguageSwitcher />
-          <button v-if="auth.isAuthenticated" class="btn-ghost hidden sm:inline-flex" @click="auth.signOut()">
+          <button v-if="auth.isAuthenticated" class="btn btn-link text-secondary text-decoration-none d-none d-sm-inline-flex" @click="auth.signOut()">
             {{ t('common.logout') }}
           </button>
         </div>
       </div>
     </header>
 
-    <main class="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-4 md:pb-10"><slot /></main>
+    <main class="container-xl flex-grow-1 pt-3 pb-5 main-content"><slot /></main>
 
-    <nav class="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white md:hidden" :aria-label="t('nav.home')">
-      <ul class="mx-auto flex max-w-md">
-        <li v-for="item in nav" :key="item.name" class="flex-1">
-          <RouterLink :to="{ name: item.name }"
-                      class="flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium"
-                      :class="isActive(item.name) ? 'text-brand-700' : 'text-slate-500'">
-            <span class="text-lg leading-none" aria-hidden="true">{{ item.icon }}</span>
+    <nav class="bottom-nav position-fixed bottom-0 start-0 end-0 d-md-none bg-white border-top" :aria-label="t('nav.home')">
+      <ul class="mx-auto mw-md">
+        <li v-for="item in nav" :key="item.name">
+          <RouterLink :to="{ name: item.name }" :class="{ active: isActive(item.name) }">
+            <span class="fs-5 lh-1" aria-hidden="true">{{ item.icon }}</span>
             {{ t(item.label) }}
           </RouterLink>
         </li>

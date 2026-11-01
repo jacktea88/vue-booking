@@ -21,5 +21,5 @@ onBeforeUnmount(() => handle?.destroy())
 </script>
 
 <template>
-  <div ref="el" class="w-full overflow-hidden rounded-xl bg-slate-200" :style="{ height: height ?? '240px' }" aria-label="map" />
+  <div ref="el" class="w-100 overflow-hidden rounded-3 bg-secondary-subtle" :style="{ height: height ?? '240px' }" aria-label="map" />
 </template>

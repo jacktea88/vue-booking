@@ -125,46 +125,48 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="lg:grid lg:grid-cols-[220px_1fr] lg:gap-6">
-    <aside class="mb-4 lg:mb-0">
-      <h1 class="mb-3 text-xl font-bold">{{ t('admin.title') }}</h1>
-      <nav class="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible" :aria-label="t('admin.title')">
+  <div class="row g-4">
+    <aside class="col-lg-3 mb-4 mb-lg-0">
+      <h1 class="mb-3 fs-5 fw-bold">{{ t('admin.title') }}</h1>
+      <nav class="nav nav-pills flex-nowrap flex-lg-column gap-2 overflow-auto pb-2" :aria-label="t('admin.title')">
         <button v-for="s in sections" :key="s"
-                class="whitespace-nowrap rounded-lg px-3 py-2 text-start text-sm font-medium"
-                :class="active === s ? 'bg-brand-700 text-white' : 'bg-white text-slate-700 hover:bg-slate-100'"
+                class="nav-link text-nowrap text-start small fw-medium"
+                :class="{ active: active === s }"
                 @click="active = s; page = 0">{{ t(sectionLabel[s]) }}</button>
       </nav>
     </aside>
 
-    <main>
-      <section v-if="active === 'dashboard'" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <main class="col-lg-9">
+      <section v-if="active === 'dashboard'" class="row row-cols-2 row-cols-sm-4 g-3">
         <div v-for="(label, key) in {
             pending_verifications: t('admin.pendingVerifications'), active_trips: t('admin.activeTrips'),
             upcoming_trips: t('admin.upcomingTrips'), bookings_today: t('admin.bookingsToday'),
             paid_amount_today: t('admin.paidToday'), refunded_amount_today: t('admin.refundedToday'),
             pending_transfers: t('admin.pendingTransfers'), open_resales: t('admin.openResales') }"
-             :key="key" class="card">
-          <p class="text-xs text-slate-500">{{ label }}</p>
-          <p class="mt-1 text-xl font-bold text-brand-700">
-            {{ key.includes('amount') ? formatDzd(Number(stats?.[key] ?? 0), locale) : (stats?.[key] ?? 0) }}
-          </p>
+             :key="key" class="col">
+          <div class="card card-body rounded-3 shadow-sm h-100">
+            <p class="small text-secondary mb-0">{{ label }}</p>
+            <p class="mt-1 mb-0 fs-4 fw-bold text-primary">
+              {{ key.includes('amount') ? formatDzd(Number(stats?.[key] ?? 0), locale) : (stats?.[key] ?? 0) }}
+            </p>
+          </div>
         </div>
       </section>
 
-      <section v-else-if="active === 'settings'" class="space-y-3">
-        <div v-for="s in settings" :key="s.key" class="card flex flex-wrap items-end gap-3">
-          <div class="flex-1">
-            <label class="label" :for="`s-${s.key}`">{{ s.key }}</label>
-            <input :id="`s-${s.key}`" class="field" :value="JSON.stringify(s.value)"
+      <section v-else-if="active === 'settings'" class="d-flex flex-column gap-3">
+        <div v-for="s in settings" :key="s.key" class="card card-body rounded-3 shadow-sm d-flex flex-wrap align-items-end gap-3">
+          <div class="flex-grow-1">
+            <label class="form-label" :for="`s-${s.key}`">{{ s.key }}</label>
+            <input :id="`s-${s.key}`" class="form-control" :value="JSON.stringify(s.value)"
                    @keyup.enter="saveSetting(s, ($event.target as HTMLInputElement).value)" />
           </div>
-          <span class="text-xs text-slate-400">{{ formatDateTime(s.updated_at, locale) }}</span>
+          <span class="small text-body-tertiary">{{ formatDateTime(s.updated_at, locale) }}</span>
         </div>
       </section>
 
       <section v-else>
         <div v-if="active === 'users'" class="mb-3">
-          <input v-model="search" class="field max-w-xs" :placeholder="t('common.search')" @keyup.enter="page = 0; load()" />
+          <input v-model="search" class="form-control mw-sm" :placeholder="t('common.search')" @keyup.enter="page = 0; load()" />
         </div>
         <DataTable :columns="columns" :rows="rows" :page="page" :page-size="PAGE_SIZE" :total="total"
                    @update:page="page = $event">
@@ -179,13 +181,13 @@ onMounted(load)
           <template #cell-price_per_seat="{ row }">{{ formatDzd(row.price_per_seat, locale) }}</template>
           <template #cell-type="{ row }">{{ t(`profile.documentType.${row.type}`) }}</template>
           <template #cell-actions="{ row }">
-            <div v-if="active === 'verification'" class="flex flex-wrap items-center gap-2">
-              <button class="btn-ghost px-2 py-1 text-xs" @click="viewDocument(row.storage_path)">{{ t('admin.viewDocument') }}</button>
-              <button class="btn-primary px-2 py-1 text-xs" @click="review(row.id, 'verified')">{{ t('common.approve') }}</button>
-              <input v-model="rejectReason[row.id]" class="field max-w-[140px] py-1 text-xs" :placeholder="t('admin.rejectionReason')" />
-              <button class="btn-danger px-2 py-1 text-xs" @click="review(row.id, 'rejected')">{{ t('common.reject') }}</button>
+            <div v-if="active === 'verification'" class="d-flex flex-wrap align-items-center gap-2">
+              <button class="btn btn-outline-secondary btn-sm" @click="viewDocument(row.storage_path)">{{ t('admin.viewDocument') }}</button>
+              <button class="btn btn-primary btn-sm" @click="review(row.id, 'verified')">{{ t('common.approve') }}</button>
+              <input v-model="rejectReason[row.id]" class="form-control form-control-sm" style="max-width: 140px" :placeholder="t('admin.rejectionReason')" />
+              <button class="btn btn-danger btn-sm" @click="review(row.id, 'rejected')">{{ t('common.reject') }}</button>
             </div>
-            <select v-else-if="active === 'users'" class="field py-1 text-xs" :value="row.role"
+            <select v-else-if="active === 'users'" class="form-select form-select-sm w-auto" :value="row.role"
                     @change="setRole(row.id, ($event.target as HTMLSelectElement).value as UserRole)">
               <option value="client">client</option><option value="driver">driver</option><option value="admin">admin</option>
             </select>

@@ -35,34 +35,34 @@ async function submit() {
 </script>
 
 <template>
-  <section class="card mt-6">
-    <h1 class="text-xl font-bold">{{ t('auth.login') }}</h1>
-    <p class="mt-1 text-sm text-slate-500">{{ t('app.tagline') }}</p>
-    <form class="mt-5 space-y-4" @submit.prevent="submit">
+  <section class="card card-body mt-4 rounded-3 shadow-sm">
+    <h1 class="fs-4 fw-bold">{{ t('auth.login') }}</h1>
+    <p class="mt-1 small text-secondary">{{ t('app.tagline') }}</p>
+    <form class="d-flex flex-column gap-3 mt-3" @submit.prevent="submit">
       <div>
-        <label class="label" for="email">{{ t('auth.email') }}</label>
-        <input id="email" v-model="email" class="field" type="email" required autocomplete="email" />
+        <label class="form-label" for="email">{{ t('auth.email') }}</label>
+        <input id="email" v-model="email" class="form-control" type="email" required autocomplete="email" />
       </div>
       <div>
-        <label class="label" for="password">{{ t('auth.password') }}</label>
-        <input id="password" v-model="password" class="field" type="password" required autocomplete="current-password" />
+        <label class="form-label" for="password">{{ t('auth.password') }}</label>
+        <input id="password" v-model="password" class="form-control" type="password" required autocomplete="current-password" />
       </div>
-      <p v-if="error" class="text-sm text-red-700" role="alert">{{ error }}</p>
-      <button class="btn-primary w-full" :disabled="auth.loading" type="submit">
+      <p v-if="error" class="small text-danger mb-0" role="alert">{{ error }}</p>
+      <button class="btn btn-primary w-100" :disabled="auth.loading" type="submit">
         {{ auth.loading ? t('auth.signingIn') : t('auth.login') }}
       </button>
     </form>
     <template v-if="lineEnabled">
-      <div class="my-4 flex items-center gap-3 text-xs text-slate-400">
-        <span class="h-px flex-1 bg-slate-200"></span>{{ t('auth.lineOr') }}<span class="h-px flex-1 bg-slate-200"></span>
+      <div class="my-3 d-flex align-items-center gap-3 small text-muted">
+        <span class="flex-grow-1 border-top"></span>{{ t('auth.lineOr') }}<span class="flex-grow-1 border-top"></span>
       </div>
-      <button class="btn-secondary w-full" type="button" :disabled="auth.loading" @click="loginWithLine">
+      <button class="btn btn-outline-secondary w-100" type="button" :disabled="auth.loading" @click="loginWithLine">
         {{ t('auth.lineLogin') }}
       </button>
     </template>
-    <div class="mt-4 flex items-center justify-between text-sm">
-      <RouterLink class="text-brand-700 hover:underline" :to="{ name: 'forgot' }">{{ t('auth.forgot') }}</RouterLink>
-      <RouterLink class="text-brand-700 hover:underline" :to="{ name: 'register' }">{{ t('auth.register') }}</RouterLink>
+    <div class="mt-3 d-flex align-items-center justify-content-between small">
+      <RouterLink class="text-primary" :to="{ name: 'forgot' }">{{ t('auth.forgot') }}</RouterLink>
+      <RouterLink class="text-primary" :to="{ name: 'register' }">{{ t('auth.register') }}</RouterLink>
     </div>
   </section>
 </template>

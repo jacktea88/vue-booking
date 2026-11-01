@@ -9,12 +9,12 @@ function step(d: number) {
 
 <template>
   <div>
-    <span class="label">{{ label }}</span>
-    <div class="inline-flex items-center gap-3 rounded-lg border border-slate-300 bg-white px-2 py-1">
-      <button type="button" class="h-8 w-8 rounded-md text-lg font-bold text-slate-700 hover:bg-slate-100"
+    <span class="form-label">{{ label }}</span>
+    <div class="d-inline-flex align-items-center gap-3 rounded-3 border bg-white px-2 py-1">
+      <button type="button" class="btn btn-link text-body text-decoration-none fs-5 fw-bold lh-1 px-2"
               :aria-label="`-1`" :disabled="modelValue <= (min ?? 1)" @click="step(-1)">−</button>
-      <span class="w-6 text-center text-sm font-semibold tabular-nums">{{ modelValue }}</span>
-      <button type="button" class="h-8 w-8 rounded-md text-lg font-bold text-slate-700 hover:bg-slate-100"
+      <span class="fw-semibold small tabular-nums text-center" style="min-width: 1.5rem">{{ modelValue }}</span>
+      <button type="button" class="btn btn-link text-body text-decoration-none fs-5 fw-bold lh-1 px-2"
               :aria-label="`+1`" :disabled="modelValue >= max" @click="step(1)">+</button>
     </div>
   </div>

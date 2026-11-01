@@ -1,0 +1,13 @@
+// Brand palette (migrated from the former Tailwind @theme).
+// Consumed by main.scss via `@use ... with (...)` so they take effect before Bootstrap is compiled.
+$brand-50: #f0fdfa;
+$brand-100: #ccfbf1;
+$brand-500: #14b8a6;
+$brand-600: #0d9488;
+$brand-700: #0f766e;
+
+$theme-primary: $brand-700;
+$theme-secondary: #64748b; // slate-500
+$theme-body-bg: #f8fafc; // slate-50
+$theme-border-radius-lg: .75rem;
+$theme-font-size-base: .9375rem;

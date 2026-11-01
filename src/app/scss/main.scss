@@ -1,0 +1,26 @@
+// Entry stylesheet: brand variables are passed into Bootstrap, then Bootstrap, then project utilities.
+@use 'variables' as v;
+
+@use 'bootstrap/scss/bootstrap' with (
+  $primary: v.$theme-primary,
+  $secondary: v.$theme-secondary,
+  $body-bg: v.$theme-body-bg,
+  $border-radius-lg: v.$theme-border-radius-lg,
+  $font-size-base: v.$theme-font-size-base,
+  $link-color: v.$brand-700,
+  $link-hover-color: v.$brand-600
+);
+
+@use 'utilities';
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Noto Naskh Arabic", sans-serif;
+}
+
+:focus-visible {
+  outline: 2px solid v.$brand-600;
+  outline-offset: 2px;
+  border-radius: 4px;
+}

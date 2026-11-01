@@ -16,24 +16,25 @@ onMounted(() => { if (auth.user) void store.load(auth.user.id) })
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <h1 class="text-xl font-bold">{{ t('notifications.title') }}</h1>
-      <button v-if="store.unreadCount" class="btn-secondary" @click="auth.user && store.markAllRead(auth.user.id)">
+  <div class="d-flex flex-column gap-4">
+    <div class="d-flex align-items-center justify-content-between gap-2">
+      <h1 class="fs-4 fw-bold mb-0">{{ t('notifications.title') }}</h1>
+      <button v-if="store.unreadCount" class="btn btn-outline-secondary" @click="auth.user && store.markAllRead(auth.user.id)">
         {{ t('notifications.markAllRead') }}
       </button>
     </div>
-    <p v-if="!store.items.length" class="card text-center text-sm text-slate-500">{{ t('notifications.empty') }}</p>
-    <ul v-else class="space-y-2">
+    <p v-if="!store.items.length" class="card card-body rounded-3 shadow-sm text-center small text-secondary mb-0">{{ t('notifications.empty') }}</p>
+    <ul v-else class="list-unstyled d-flex flex-column gap-2 mb-0">
       <li v-for="n in store.items" :key="n.id">
-        <button class="card block w-full text-start" :class="!n.read_at ? 'border-brand-600 bg-brand-50/40' : ''"
+        <button class="card card-body rounded-3 shadow-sm w-100 text-start hover-border-primary"
+                :class="!n.read_at ? 'border-primary bg-brand-light' : ''"
                 @click="store.markRead(n.id)">
-          <div class="flex items-start justify-between gap-3">
+          <div class="d-flex align-items-start justify-content-between gap-3">
             <div>
-              <p class="text-sm font-semibold">{{ label(n.title) }}</p>
-              <p class="mt-0.5 text-sm text-slate-600">{{ label(n.body) }}</p>
+              <p class="small fw-semibold mb-0">{{ label(n.title) }}</p>
+              <p class="mt-1 small text-secondary mb-0">{{ label(n.body) }}</p>
             </div>
-            <span class="shrink-0 text-[11px] text-slate-400">{{ formatDateTime(n.created_at, locale) }}</span>
+            <span class="flex-shrink-0 fs-xs text-secondary">{{ formatDateTime(n.created_at, locale) }}</span>
           </div>
         </button>
       </li>

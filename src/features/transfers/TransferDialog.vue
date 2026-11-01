@@ -31,21 +31,21 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 sm:items-center sm:p-4"
+  <div class="position-fixed top-0 start-0 end-0 bottom-0 z-50 bg-overlay d-flex align-items-end align-items-sm-center justify-content-center p-0 p-sm-3"
        role="dialog" aria-modal="true" :aria-label="t('transfer.compatible')">
-    <div class="max-h-[85dvh] w-full max-w-lg overflow-auto rounded-t-2xl bg-white p-5 sm:rounded-2xl">
-      <h2 class="text-base font-semibold">{{ t('transfer.compatible') }}</h2>
-      <p class="mt-1 text-xs text-slate-500">{{ t('transfer.priceUnchanged') }}</p>
-      <p v-if="loading" class="mt-4 text-sm text-slate-500">{{ t('common.loading') }}</p>
-      <p v-else-if="!rows.length" class="mt-4 text-sm text-slate-500">{{ t('transfer.none') }}</p>
-      <ul v-else class="mt-4 space-y-2">
-        <li v-for="r in rows" :key="r.trip_id" class="rounded-lg border border-slate-200 p-3">
-          <p class="text-sm font-medium">{{ r.pickup_name }} → {{ r.dropoff_name }}</p>
-          <p class="mt-0.5 text-xs text-slate-500">{{ formatDateTime(r.departure_at, locale) }} · {{ r.driver_name }}</p>
-          <button class="btn-primary mt-2" :disabled="busy" @click="request(r)">{{ t('transfer.request') }}</button>
+    <div class="card card-body w-100 mw-md rounded-3 shadow border-0 overflow-auto" style="max-height: 85dvh">
+      <h2 class="fs-5 fw-semibold mb-0">{{ t('transfer.compatible') }}</h2>
+      <p class="mt-1 mb-0 fs-xs text-secondary">{{ t('transfer.priceUnchanged') }}</p>
+      <p v-if="loading" class="mt-4 mb-0 small text-secondary">{{ t('common.loading') }}</p>
+      <p v-else-if="!rows.length" class="mt-4 mb-0 small text-secondary">{{ t('transfer.none') }}</p>
+      <ul v-else class="list-unstyled d-flex flex-column gap-2 mt-4 mb-0">
+        <li v-for="r in rows" :key="r.trip_id" class="rounded-3 border p-3">
+          <p class="small fw-medium mb-0">{{ r.pickup_name }} → {{ r.dropoff_name }}</p>
+          <p class="mt-1 mb-0 fs-xs text-secondary">{{ formatDateTime(r.departure_at, locale) }} · {{ r.driver_name }}</p>
+          <button class="btn btn-primary btn-sm mt-2" :disabled="busy" @click="request(r)">{{ t('transfer.request') }}</button>
         </li>
       </ul>
-      <button class="btn-secondary mt-5 w-full" @click="emit('close')">{{ t('common.close') }}</button>
+      <button class="btn btn-outline-secondary mt-4 w-100" @click="emit('close')">{{ t('common.close') }}</button>
     </div>
   </div>
 </template>

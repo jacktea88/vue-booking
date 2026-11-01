@@ -4,11 +4,11 @@ const { toasts, dismiss } = useToast()
 </script>
 
 <template>
-  <div class="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex flex-col items-center gap-2 px-4 sm:bottom-6" aria-live="polite">
+  <div class="toast-host d-flex flex-column align-items-center gap-2 px-3" aria-live="polite">
     <div
       v-for="t in toasts" :key="t.id"
-      class="pointer-events-auto w-full max-w-sm rounded-lg px-4 py-3 text-sm shadow-lg"
-      :class="t.tone === 'error' ? 'bg-red-600 text-white' : t.tone === 'success' ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-white'"
+      class="pe-auto w-100 mw-sm rounded-3 px-3 py-2 small shadow"
+      :class="t.tone === 'error' ? 'bg-danger text-white' : t.tone === 'success' ? 'bg-success text-white' : 'bg-dark text-white'"
       role="status"
       @click="dismiss(t.id)"
     >{{ t.message }}</div>

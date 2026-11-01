@@ -6,7 +6,6 @@ import ar from './ar'
 
 export const SUPPORTED_LOCALES = ['zh-TW', 'ar', 'fr', 'en'] as const
 export type AppLocale = (typeof SUPPORTED_LOCALES)[number]
-export const RTL_LOCALES: AppLocale[] = ['ar']
 export const LOCALE_STORAGE_KEY = 'wassalni.locale'
 export const LOCALE_LABELS: Record<AppLocale, string> = {
   'zh-TW': '繁體中文',
@@ -29,14 +28,12 @@ export const i18n = createI18n({
   messages: { 'zh-TW': zhTW, en, fr, ar },
 })
 
-export function isRtl(locale: string): boolean { return RTL_LOCALES.includes(locale as AppLocale) }
-
-/** Applies locale to vue-i18n, <html lang/dir> and persistent storage. */
+/** Applies locale to vue-i18n, <html lang/dir> and persistent storage. RTL layout is not supported; dir is always ltr. */
 export function applyLocale(locale: AppLocale): void {
   ;(i18n.global.locale as unknown as { value: string }).value = locale
   if (typeof document !== 'undefined') {
     document.documentElement.lang = locale
-    document.documentElement.dir = isRtl(locale) ? 'rtl' : 'ltr'
+    document.documentElement.dir = 'ltr'
   }
   if (typeof localStorage !== 'undefined') localStorage.setItem(LOCALE_STORAGE_KEY, locale)
 }

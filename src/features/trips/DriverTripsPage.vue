@@ -16,20 +16,21 @@ onMounted(() => trips.run())
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <h1 class="text-xl font-bold">{{ t('nav.trips') }}</h1>
-      <RouterLink class="btn-primary" :to="{ name: 'driver-create-trip' }">{{ t('nav.create') }}</RouterLink>
+  <div class="d-flex flex-column gap-4">
+    <div class="d-flex align-items-center justify-content-between gap-2">
+      <h1 class="fs-4 fw-bold mb-0">{{ t('nav.trips') }}</h1>
+      <RouterLink class="btn btn-primary" :to="{ name: 'driver-create-trip' }">{{ t('nav.create') }}</RouterLink>
     </div>
     <AsyncSection :state="trips.state.value" :error="trips.error.value" :empty-text="t('trip.noTrips')" @retry="trips.run()">
-      <ul class="space-y-3">
+      <ul class="list-unstyled d-flex flex-column gap-3 mb-0">
         <li v-for="trip in trips.data.value ?? []" :key="trip.id">
-          <RouterLink class="card block hover:border-brand-600" :to="{ name: 'driver-trip-details', params: { id: trip.id } }">
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-sm">{{ formatDateTime(trip.departure_at, locale) }}</span>
+          <RouterLink class="card card-body rounded-3 shadow-sm d-block text-body text-decoration-none hover-border-primary"
+                      :to="{ name: 'driver-trip-details', params: { id: trip.id } }">
+            <div class="d-flex align-items-center justify-content-between gap-3">
+              <span class="small">{{ formatDateTime(trip.departure_at, locale) }}</span>
               <StatusBadge :status="trip.status" :label="t(`trip.status.${trip.status}`)" />
             </div>
-            <p class="mt-1 text-xs text-slate-500">{{ t(`search.bookingMode.${trip.booking_mode}`) }}</p>
+            <p class="mt-1 mb-0 small text-secondary">{{ t(`search.bookingMode.${trip.booking_mode}`) }}</p>
           </RouterLink>
         </li>
       </ul>

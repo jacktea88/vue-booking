@@ -45,27 +45,27 @@ async function useCurrent() {
 </script>
 
 <template>
-  <div class="relative">
-    <label class="label" :for="`place-${label}`">{{ label }}</label>
+  <div class="position-relative">
+    <label class="form-label" :for="`place-${label}`">{{ label }}</label>
     <input
-      :id="`place-${label}`" class="field" type="text" autocomplete="off"
+      :id="`place-${label}`" class="form-control" type="text" autocomplete="off"
       :placeholder="placeholder" :value="term"
       role="combobox" :aria-expanded="open" aria-autocomplete="list"
       @input="onInput" @focus="open = results.length > 0"
     />
-    <button v-if="allowCurrentLocation" type="button" class="mt-1 text-xs font-medium text-brand-700 hover:underline" @click="useCurrent">
+    <button v-if="allowCurrentLocation" type="button" class="btn btn-link btn-sm p-0 mt-1 small fw-medium text-primary text-decoration-none" @click="useCurrent">
       {{ geo.loading.value ? t('common.loading') : t('search.useMyLocation') }}
     </button>
-    <p v-if="geo.denied.value" class="mt-1 text-xs text-red-600">{{ t('search.locationDenied') }}</p>
+    <p v-if="geo.denied.value" class="mt-1 small text-danger mb-0">{{ t('search.locationDenied') }}</p>
 
-    <ul v-if="open && results.length" class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-slate-200 bg-white shadow-lg" role="listbox">
+    <ul v-if="open && results.length" class="position-absolute z-3 mt-1 w-100 max-h-60 overflow-auto list-unstyled rounded-3 border bg-white shadow-sm p-1" role="listbox">
       <li v-for="(r, i) in results" :key="`${r.name}-${i}`">
-        <button type="button" class="block w-full px-3 py-2 text-start text-sm hover:bg-slate-50" role="option" @click="select(r)">
-          <span class="font-medium">{{ r.name }}</span>
-          <span v-if="r.wilaya" class="ms-2 text-xs text-slate-500">{{ r.wilaya }}</span>
+        <button type="button" class="dropdown-item text-wrap small" role="option" @click="select(r)">
+          <span class="fw-medium">{{ r.name }}</span>
+          <span v-if="r.wilaya" class="ms-2 small text-secondary">{{ r.wilaya }}</span>
         </button>
       </li>
     </ul>
-    <p v-if="busy" class="mt-1 text-xs text-slate-400">{{ t('common.loading') }}</p>
+    <p v-if="busy" class="mt-1 small text-muted mb-0">{{ t('common.loading') }}</p>
   </div>
 </template>

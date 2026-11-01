@@ -25,19 +25,19 @@ async function submit() {
 </script>
 
 <template>
-  <form class="card" @submit.prevent="submit">
-    <h2 class="text-sm font-semibold text-slate-700">{{ t('resale.create') }}</h2>
-    <div class="mt-3 grid gap-3 sm:grid-cols-2">
-      <div>
-        <label class="label" for="rs-seats">{{ t('resale.seatsForSale') }}</label>
-        <input id="rs-seats" v-model.number="seats" class="field" type="number" min="1" :max="maxSeats" required />
+  <form class="card card-body rounded-3 shadow-sm" @submit.prevent="submit">
+    <h2 class="fs-6 fw-semibold mb-0">{{ t('resale.create') }}</h2>
+    <div class="mt-3 row g-3">
+      <div class="col-sm-6">
+        <label class="form-label" for="rs-seats">{{ t('resale.seatsForSale') }}</label>
+        <input id="rs-seats" v-model.number="seats" class="form-control" type="number" min="1" :max="maxSeats" required />
       </div>
-      <div>
-        <label class="label" for="rs-price">{{ t('resale.pricePerSeat') }}</label>
-        <input id="rs-price" v-model.number="price" class="field" type="number" min="0" :max="maxPrice" step="50" required />
-        <p class="mt-1 text-xs text-slate-500">{{ t('resale.maxPrice', { amount: formatDzd(maxPrice, locale) }) }}</p>
+      <div class="col-sm-6">
+        <label class="form-label" for="rs-price">{{ t('resale.pricePerSeat') }}</label>
+        <input id="rs-price" v-model.number="price" class="form-control" type="number" min="0" :max="maxPrice" step="50" required />
+        <p class="mt-1 mb-0 fs-xs text-secondary">{{ t('resale.maxPrice', { amount: formatDzd(maxPrice, locale) }) }}</p>
       </div>
     </div>
-    <button class="btn-primary mt-3" type="submit" :disabled="busy">{{ t('common.submit') }}</button>
+    <button class="btn btn-primary mt-3" type="submit" :disabled="busy">{{ t('common.submit') }}</button>
   </form>
 </template>

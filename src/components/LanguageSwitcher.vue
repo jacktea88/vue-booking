@@ -8,10 +8,10 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <label class="inline-flex items-center gap-2">
-    <span class="sr-only">{{ t('common.language') }}</span>
+  <label class="d-inline-flex align-items-center gap-2 mb-0">
+    <span class="visually-hidden">{{ t('common.language') }}</span>
     <select
-      class="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm"
+      class="form-select form-select-sm w-auto"
       :value="locale.current"
       @change="locale.set(($event.target as HTMLSelectElement).value as AppLocale)"
     >
